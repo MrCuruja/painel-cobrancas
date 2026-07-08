@@ -1,0 +1,1318 @@
+
+<!DOCTYPE html>
+<!-- saved from url=(0055)file:///C:/Users/gabri/Downloads/livro_de_controle.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Controle de Cobranças · Condomínio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./Painel de Controle de Cobranças · Condomínio_files/css2" rel="stylesheet">
+
+<!-- Firebase (banco de dados na nuvem + login) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --bg-main: #f5f5f7;
+    --bg-card: #ffffff;
+    --text-main: #1d1d1f;
+    --text-muted: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --danger: #ff453a;
+    --danger-bg: #ff453a15;
+    --success: #34c759;
+    --success-bg: #34c75915;
+    --border: #d2d2d7;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* UTILS */
+  .hidden { display: none !important; }
+  
+  /* BOTÃO VOLTAR */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: color 0.2s;
+  }
+  .btn-back:hover { color: var(--accent-hover); }
+
+  .view-individual-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* BOTÃO EXCLUIR MORADOR */
+  .btn-excluir-morador {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-excluir-morador:hover { background: var(--danger); color: #fff; }
+
+  /* ---------- HEADER / CAPA ---------- */
+  .cover {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .cover-info { flex: 1; }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  h1.title {
+    color: var(--text-main);
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h1.title input {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    width: 100%;
+    outline: none;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.4;
+    max-width: 600px;
+  }
+
+  .stamp {
+    background: var(--bg-main);
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .stamp .n {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+  }
+
+  .stamp .l {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+    line-height: 1.2;
+  }
+
+  /* ---------- BENTO GRID PARAMETERS ---------- */
+  .assumptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .assumption {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .assumption label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .assumption .row {
+    display: flex;
+    align-items: center;
+    background: var(--bg-main);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .assumption input {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-main);
+    background: transparent;
+    border: none;
+    width: 100%;
+    outline: none;
+  }
+
+  .assumption .unit {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  .assumption button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--text-main);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    width: 100%;
+  }
+
+  .assumption button:hover { background: #333; }
+
+  /* ---------- TABELAS ---------- */
+  .book {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+
+  .table-container { overflow-x: auto; }
+
+  .ledger {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .ledger th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--bg-main);
+    background: var(--bg-card);
+  }
+
+  .ledger td {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--bg-main);
+    vertical-align: middle;
+  }
+
+  .ledger.clickable tbody tr { cursor: pointer; transition: background 0.15s; }
+  .ledger.clickable tbody tr:hover { background-color: #f5f5f7; }
+  .ledger:not(.clickable) tbody tr:hover { background-color: #fafafa; }
+
+  /* Inputs das tabelas */
+  .ledger input[type=text], 
+  .ledger input[type=number], 
+  .ledger input[type=date] {
+    width: 100%;
+    background: var(--bg-main);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 6px 8px;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+
+  .ledger input:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .ledger input[type=number] { text-align: right; }
+
+  /* Alinhamentos */
+  .col-parcela { width: 12%; }
+  .col-date { width: 14%; }
+  .col-num { text-align: right; }
+  .col-dias { text-align: center; width: 10%; }
+
+  .link-morador {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* ---------- QUADRA (badge + coluna) ---------- */
+  .col-quadra { width: 9%; text-align: center; }
+
+  .badge-quadra {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--bg-main);
+    color: var(--text-main);
+    letter-spacing: 0.02em;
+  }
+
+  /* Linha de cabeçalho de grupo (quando a lista está agrupada por quadra) */
+  tr.quadra-header td {
+    background: var(--bg-main) !important;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    cursor: default;
+  }
+  .ledger.clickable tr.quadra-header { cursor: default; }
+  .ledger.clickable tr.quadra-header:hover td { background: var(--bg-main) !important; }
+
+  /* ---------- BARRA DE ORDENAÇÃO ---------- */
+  .toolbar-ordenar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--bg-main);
+    flex-wrap: wrap;
+  }
+  .toolbar-ordenar label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .toolbar-ordenar select {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .toolbar-ordenar select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .badge-dias {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-dias.atraso { background: var(--danger-bg); color: var(--danger); }
+  .badge-dias.ok { background: var(--success-bg); color: var(--success); }
+
+  .val-red { color: var(--danger); font-weight: 500; }
+  .val-total { font-weight: 600; color: var(--text-main); }
+
+  .rm-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+    width: 28px;
+    height: 28px;
+  }
+  .rm-btn:hover { background: var(--danger-bg); color: var(--danger); }
+
+  .add-row {
+    padding: 16px;
+    background: #fafafa;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .add-row button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-row button:hover { border-color: var(--text-main); background: #fff; }
+
+  /* ---------- CADASTRO DE NOVO MORADOR ---------- */
+  .add-row.add-morador {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .add-row.add-morador input {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    background: var(--bg-main);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+
+  .add-row.add-morador input:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .add-row.add-morador input#novoMoradorNome { flex: 2; min-width: 180px; }
+  .add-row.add-morador input#novoMoradorQuadra { flex: 0 0 110px; min-width: 90px; text-transform: uppercase; }
+  .add-row.add-morador input#novoMoradorUnidade { flex: 1; min-width: 120px; }
+
+  .add-row.add-morador button {
+    background: var(--text-main);
+    color: #fff;
+    border-color: var(--text-main);
+  }
+  .add-row.add-morador button:hover { background: #333; }
+
+  /* ---------- TOTALIZADORES ---------- */
+  .stub {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+
+  .stub .item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stub .item .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+
+  .stub .item .value {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .stub .item.total .value { color: var(--accent); font-size: 32px; }
+
+  .stub .paid-count {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--bg-main);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  footer.note {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 16px;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 850px) {
+    .assumptions { grid-template-columns: 1fr; }
+    .stub { grid-template-columns: 1fr; gap: 16px; }
+    .cover { flex-direction: column; text-align: center; align-items: center; }
+    .stamp { margin-top: 12px; }
+  }
+
+  /* ---------- LOGIN / STATUS DE SINCRONIZAÇÃO ---------- */
+  #loginOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  #loginBox {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #loginBox h2 { font-size: 18px; margin-bottom: 4px; }
+  #loginBox input {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    outline: none;
+    background: var(--bg-main);
+    color: var(--text-main);
+  }
+  #loginBox button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  #loginBox button:hover { background: var(--accent-hover); }
+  #loginErro { color: var(--danger); font-size: 13px; min-height: 16px; }
+
+  #statusBar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #statusBar #btnLogout {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  #statusBar #btnLogout:hover { background: var(--bg-card); }
+  #syncIndicator.saving { color: var(--accent); }
+  #syncIndicator.erro { color: var(--danger); }
+  #syncIndicator.ok { color: var(--success); }
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="loginOverlay">
+  <div id="loginBox">
+    <h2>Painel de Cobranças</h2>
+    <div class="subtitle" style="margin:0 0 8px;">Entre com o e-mail e senha cadastrados no Firebase para acessar e editar os dados.</div>
+    <input id="loginEmail" type="email" placeholder="E-mail" autocomplete="username">
+    <input id="loginSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <div id="loginErro"></div>
+    <button id="btnLogin">Entrar</button>
+  </div>
+</div>
+
+<div class="wrap hidden" id="appWrap">
+
+  <div id="statusBar">
+    <span id="syncIndicator">—</span>
+    <button id="btnLogout">Sair</button>
+  </div>
+
+  <div id="viewGeral" class="wrap" style="gap: 24px; margin: 0; max-width: 100%;">
+    <div class="cover">
+      <div class="cover-info">
+        <div class="eyebrow">Painel de Controle do Condomínio</div>
+        <h1 class="title">Lista Geral de Inadimplência</h1>
+        <div class="subtitle">Visão unificada das unidades com parcelas em aberto. Clique em qualquer morador para acessar, auditar ou lançar parcelas no livro individual.</div>
+      </div>
+      <div class="stamp">
+        <div>
+          <div class="n" id="geralMaxDias">322</div>
+          <div class="l">dias em atraso<br>(máximo geral)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="book">
+      <div class="toolbar-ordenar">
+        <label for="seletorOrdenacao">Ordenar por:</label>
+        <select id="seletorOrdenacao">
+          <option value="quadra">Quadra (agrupado)</option>
+          <option value="nome">Nome (ordem alfabética)</option>
+          <option value="total">Maior valor total devido</option>
+        </select>
+      </div>
+      <div class="table-container">
+        <table class="ledger clickable">
+          <thead>
+            <tr>
+              <th>Unidade / Morador</th>
+              <th class="col-quadra">Quadra</th>
+              <th class="col-dias">Atraso Máx.</th>
+              <th class="col-num">Total Condomínio</th>
+              <th class="col-num">Total Juros</th>
+              <th class="col-num">Total Multa</th>
+              <th class="col-num">Total Geral Devido</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyGeral"></tbody>
+        </table>
+      </div>
+      <div class="add-row add-morador">
+        <input type="text" id="novoMoradorNome" placeholder="Nome do morador">
+        <input type="text" id="novoMoradorQuadra" placeholder="Quadra (ex: A, B, L)" maxlength="20">
+        <input type="text" id="novoMoradorUnidade" placeholder="Unidade (ex: B12)">
+        <button id="btnNovoMorador">+ Registrar morador</button>
+      </div>
+    </div>
+
+    <div class="stub">
+      <div class="item">
+        <div class="label">Juros Acumulados (Geral)</div>
+        <div class="value" id="geralTotJuros">R$&nbsp;183,94</div>
+      </div>
+      <div class="item">
+        <div class="label">Multas Acumuladas (Geral)</div>
+        <div class="value" id="geralTotMultas">R$&nbsp;88,00</div>
+      </div>
+      <div class="item total">
+        <div class="label">Dívida Ativa Total</div>
+        <div class="value" id="geralTotGeral">R$&nbsp;5.101,94</div>
+      </div>
+      <div class="paid-count" id="geralCount">4 moradores registrados</div>
+    </div>
+  </div>
+
+
+  <div id="viewIndividual" class="wrap hidden" style="gap: 24px; margin: 0; max-width: 100%;">
+    <div class="view-individual-header">
+      <button class="btn-back" id="btnVoltar">← Voltar para a Lista Geral</button>
+      <button class="btn-excluir-morador" id="btnExcluirMorador">🗑 Excluir cadastro do morador</button>
+    </div>
+
+    <div class="cover">
+      <div class="cover-info">
+        <div class="eyebrow">Livro de cobrança — controle de parcelas</div>
+        <h1 class="title"><input id="tituloIndividual" type="text" value=""></h1>
+        <div class="subtitle" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span>Quadra:</span>
+          <input id="quadraIndividual" type="text" placeholder="ex: A" maxlength="20" style="width:90px; text-transform:uppercase; background:var(--bg-main); border:1px solid transparent; border-radius:6px; padding:4px 8px; font-family:inherit; font-size:13px; font-weight:600; color:var(--text-main); outline:none;">
+        </div>
+        <div class="subtitle">Lançamento e apuração de juros e multa por atraso no pagamento do condomínio. Edite as parcelas abaixo — os valores recalculam sozinhos.</div>
+      </div>
+      <div class="stamp">
+        <div>
+          <div class="n" id="stampDias">0</div>
+          <div class="l">dias em atraso<br>(máximo)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="assumptions">
+      <div class="assumption">
+        <label>Taxa de juros ao mês</label>
+        <div class="row"><input id="taxaJuros" type="number" step="0.01" value="1"><span class="unit">%</span></div>
+      </div>
+      <div class="assumption">
+        <label>Multa por atraso</label>
+        <div class="row"><input id="taxaMulta" type="number" step="0.01" value="2"><span class="unit">%</span></div>
+      </div>
+      <div class="assumption">
+        <label>Data de referência (hoje)</label>
+        <div class="row" style="margin-bottom: 4px;"><input id="dataRef" type="date"></div>
+        <button id="btnAplicarRef">Aplicar a todas as parcelas</button>
+      </div>
+    </div>
+
+    <div class="book">
+      <div class="table-container">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th class="col-parcela">Parcela</th>
+              <th class="col-date">Vencimento</th>
+              <th class="col-date">Data ref.</th>
+              <th class="col-num">Condomínio</th>
+              <th class="col-dias">Dias atraso</th>
+              <th class="col-num">Juros</th>
+              <th class="col-num">Multa</th>
+              <th class="col-num">Total a pagar</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyIndividual"><tr>
+        <td class="col-parcela"><input type="text" data-field="nome" value="NOVA"></td>
+        <td class="col-date"><input type="date" data-field="venc" value="2026-07-03"></td>
+        <td class="col-date"><input type="date" data-field="ref" value="2026-07-03"></td>
+        <td class="col-num"><input type="number" step="0.01" data-field="valor" value="430"></td>
+        <td class="col-dias"><span class="badge-dias ok" data-role="dias">0</span></td>
+        <td class="col-num"><span class="val-red" data-role="juros">R$&nbsp;0,00</span></td>
+        <td class="col-num"><span class="val-red" data-role="multa">R$&nbsp;0,00</span></td>
+        <td class="col-num"><span class="val-total" data-role="total">R$&nbsp;430,00</span></td>
+        <td><button class="rm-btn" title="remover parcela">✕</button></td>
+      </tr><tr>
+        <td class="col-parcela"><input type="text" data-field="nome" value="NOVA"></td>
+        <td class="col-date"><input type="date" data-field="venc" value="2026-07-03"></td>
+        <td class="col-date"><input type="date" data-field="ref" value="2026-07-03"></td>
+        <td class="col-num"><input type="number" step="0.01" data-field="valor" value="0"></td>
+        <td class="col-dias"><span class="badge-dias ok" data-role="dias">0</span></td>
+        <td class="col-num"><span class="val-red" data-role="juros">R$&nbsp;0,00</span></td>
+        <td class="col-num"><span class="val-red" data-role="multa">R$&nbsp;0,00</span></td>
+        <td class="col-num"><span class="val-total" data-role="total">R$&nbsp;0,00</span></td>
+        <td><button class="rm-btn" title="remover parcela">✕</button></td>
+      </tr></tbody>
+        </table>
+      </div>
+      <div class="add-row">
+        <button id="btnAdd">+ Lançar parcela</button>
+      </div>
+    </div>
+
+    <div class="stub">
+      <div class="item">
+        <div class="label">Total de juros</div>
+        <div class="value" id="totJuros">R$&nbsp;0,00</div>
+      </div>
+      <div class="item">
+        <div class="label">Total de multas</div>
+        <div class="value" id="totMultas">R$&nbsp;0,00</div>
+      </div>
+      <div class="item total">
+        <div class="label">Total geral a pagar</div>
+        <div class="value" id="totGeral">R$&nbsp;430,00</div>
+      </div>
+      <div class="paid-count" id="parcelaCount">2 parcelas lançadas</div>
+    </div>
+  </div>
+
+  <footer class="note">
+    Fórmulas aplicadas: juros = (valor do condomínio × taxa de juros ÷ 30) × dias de atraso &nbsp;·&nbsp; multa = valor do condomínio × taxa de multa &nbsp;·&nbsp; total = condomínio + juros + multa
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const fmtBRL = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  const toDateInput = d => d.toISOString().slice(0,10);
+  const todayISO = toDateInput(new Date());
+
+  document.getElementById('dataRef').value = todayISO;
+
+  // ---------- FIREBASE ----------
+  // Cole aqui o firebaseConfig que você copiou do console do Firebase.
+  const firebaseConfig = {
+    apiKey: "AIzaSyB00pfXLrZxVHFZH2CGGenvyqMm8Uh8Vgk",
+    authDomain: "monteverde-f6be6.firebaseapp.com",
+    projectId: "monteverde-f6be6",
+    storageBucket: "monteverde-f6be6.firebasestorage.app",
+    messagingSenderId: "1024392119540",
+    appId: "1:1024392119540:web:5367fd3b8ab0837912caa1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const docRef = db.collection('condominio').doc('dados');
+
+  // Dados usados apenas na PRIMEIRA vez (para "semear" o banco), caso o
+  // documento no Firestore ainda não exista. Depois disso, tudo vem da nuvem.
+  const seedMoradores = {
+    "jose_aldo": {
+      nomeExibicao: "JOSÉ ALDO · UNIDADE L10",
+      quadra: "L",
+      parcelas: [
+        {id: 'p0', nome:'JUL', valor:380, venc:'2025-08-15', ref: todayISO},
+        {id: 'p1', nome:'OUT', valor:100, venc:'2025-11-15', ref: todayISO},
+        {id: 'p2', nome:'NOV', valor:380, venc:'2025-12-15', ref: todayISO},
+        {id: 'p3', nome:'NOV', valor:100, venc:'2025-12-15', ref: todayISO},
+        {id: 'p4', nome:'FEV', valor:430, venc:'2026-03-15', ref: todayISO},
+        {id: 'p5', nome:'MAR', valor:430, venc:'2026-04-15', ref: todayISO},
+        {id: 'p6', nome:'ABR', valor:430, venc:'2026-05-15', ref: todayISO},
+        {id: 'p7', nome:'MAI', valor:430, venc:'2026-06-15', ref: todayISO},
+      ]
+    },
+    "maria_silva": {
+      nomeExibicao: "MARIA SILVA · UNIDADE A04",
+      quadra: "A",
+      parcelas: [
+        {id: 'p0', nome:'JAN', valor:430, venc:'2026-01-15', ref: todayISO},
+        {id: 'p1', nome:'FEV', valor:430, venc:'2026-02-15', ref: todayISO},
+        {id: 'p2', nome:'MAR', valor:430, venc:'2026-03-15', ref: todayISO}
+      ]
+    },
+    "carlos_eduardo": {
+      nomeExibicao: "CARLOS EDUARDO · UNIDADE C22",
+      quadra: "C",
+      parcelas: [
+        {id: 'p0', nome:'MAI', valor:430, venc:'2026-05-15', ref: todayISO}
+      ]
+    }
+  };
+
+  let moradores = {};
+  let moradorAtivoKey = null;
+  let nextIdCounter = 100;
+  let saveTimer = null;
+  let ordenacao = 'quadra'; // 'quadra' | 'nome' | 'total'
+
+  // Retorna a quadra do morador já normalizada (maiúsculas, sem espaços nas pontas).
+  // Moradores antigos que ainda não tinham esse campo caem em "SEM QUADRA".
+  function getQuadra(m) {
+    const q = (m.quadra || '').trim();
+    return q ? q.toUpperCase() : 'SEM QUADRA';
+  }
+
+  function setSync(estado, texto) {
+    const el = document.getElementById('syncIndicator');
+    el.className = estado;
+    el.textContent = texto;
+  }
+
+  // Grava no Firestore (com pequeno atraso para não gravar a cada tecla digitada)
+  function agendarSalvamento() {
+    setSync('saving', 'Salvando…');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(salvarAgora, 700);
+  }
+
+  function salvarAgora() {
+    const taxaJuros = parseFloat(document.getElementById('taxaJuros').value) || 0;
+    const taxaMulta = parseFloat(document.getElementById('taxaMulta').value) || 0;
+    docRef.set({ moradores, taxaJuros, taxaMulta, atualizadoEm: new Date().toISOString() })
+      .then(() => setSync('ok', 'Sincronizado ✓'))
+      .catch(err => { console.error(err); setSync('erro', 'Erro ao salvar'); });
+  }
+
+  // Carrega os dados do Firestore. Se o documento ainda não existir
+  // (primeiro acesso), cria com os dados de exemplo (seed).
+  function carregarDados() {
+    setSync('saving', 'Carregando…');
+    docRef.get().then(snap => {
+      if (snap.exists) {
+        const dados = snap.data();
+        moradores = dados.moradores || {};
+        if (dados.taxaJuros !== undefined) document.getElementById('taxaJuros').value = dados.taxaJuros;
+        if (dados.taxaMulta !== undefined) document.getElementById('taxaMulta').value = dados.taxaMulta;
+      } else {
+        moradores = seedMoradores;
+        salvarAgora();
+      }
+      renderGeral();
+      setSync('ok', 'Sincronizado ✓');
+    }).catch(err => {
+      console.error(err);
+      setSync('erro', 'Erro ao carregar os dados');
+    });
+  }
+
+  // ---------- LOGIN ----------
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('appWrap').classList.remove('hidden');
+      carregarDados();
+    } else {
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      document.getElementById('appWrap').classList.add('hidden');
+    }
+  });
+
+  document.getElementById('btnLogin').addEventListener('click', () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+    document.getElementById('loginErro').textContent = '';
+    auth.signInWithEmailAndPassword(email, senha)
+      .catch(err => { document.getElementById('loginErro').textContent = 'E-mail ou senha inválidos.'; });
+  });
+
+  ['loginEmail','loginSenha'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnLogin').click(); }
+    });
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', () => auth.signOut());
+
+  // Nomeia automaticamente a parcela com a abreviação do mês ANTERIOR ao
+  // vencimento escolhido (ex.: vencimento em Agosto -> parcela "JUL").
+  // O usuário sempre pode sobrescrever esse nome manualmente depois.
+  const MESES_ABREV = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  function nomeAutomaticoParcela(vencISO) {
+    if (!vencISO) return '';
+    const d = new Date(vencISO + 'T00:00:00');
+    if (isNaN(d.getTime())) return '';
+    let mesAnterior = d.getMonth() - 1;
+    if (mesAnterior < 0) mesAnterior = 11;
+    return MESES_ABREV[mesAnterior];
+  }
+
+  function diasEntre(a, b){
+    const da = new Date(a+'T00:00:00');
+    const db = new Date(b+'T00:00:00');
+    return Math.round((db - da) / 86400000);
+  }
+
+  function calcParcela(p) {
+    const taxaJuros = parseFloat(document.getElementById('taxaJuros').value) || 0;
+    const taxaMulta = parseFloat(document.getElementById('taxaMulta').value) || 0;
+    const dias = diasEntre(p.venc, p.ref);
+    const diasPos = Math.max(dias, 0);
+    const juros = diasPos > 0 ? ((p.valor * (taxaJuros/100)) / 30) * diasPos : 0;
+    const multa = diasPos > 0 ? p.valor * (taxaMulta/100) : 0;
+    const total = p.valor + juros + multa;
+    return {dias, juros, multa, total};
+  }
+
+  // Monta a linha <tr> de um morador para a tabela geral.
+  function criarLinhaMorador(key, m, dadosCalculados) {
+    const {mCondominio, mJuros, mMulta, mTotal, mMaxDias} = dadosCalculados;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="link-morador">${m.nomeExibicao}</span></td>
+      <td class="col-quadra"><span class="badge-quadra">${getQuadra(m)}</span></td>
+      <td class="col-dias"><span class="badge-dias ${mMaxDias>0?'atraso':'ok'}">${mMaxDias}</span></td>
+      <td class="col-num">${fmtBRL(mCondominio)}</td>
+      <td class="col-num val-red">${fmtBRL(mJuros)}</td>
+      <td class="col-num val-red">${fmtBRL(mMulta)}</td>
+      <td class="col-num val-total">${fmtBRL(mTotal)}</td>
+    `;
+    tr.addEventListener('click', () => abrirMorador(key));
+    return tr;
+  }
+
+  // Monta a linha de cabeçalho de um grupo (usada apenas quando a lista está agrupada por quadra).
+  function criarLinhaCabecalhoQuadra(nomeQuadra, qtd) {
+    const tr = document.createElement('tr');
+    tr.className = 'quadra-header';
+    const rotulo = nomeQuadra === 'SEM QUADRA' ? 'Sem quadra definida' : `Quadra ${nomeQuadra}`;
+    tr.innerHTML = `<td colspan="7">${rotulo} · ${qtd} ${qtd === 1 ? 'morador' : 'moradores'}</td>`;
+    return tr;
+  }
+
+  // Renderiza a tabela resumo mestre (Lista Geral), respeitando o modo de
+  // ordenação selecionado: agrupado por quadra, alfabético por nome, ou
+  // decrescente pelo maior valor total devido.
+  function renderGeral() {
+    const tbody = document.getElementById('tbodyGeral');
+    tbody.innerHTML = '';
+
+    let gJuros = 0, gMulta = 0, gGeral = 0, gMaxDias = 0;
+    let totalMoradores = 0;
+    const lista = [];
+
+    for (let key in moradores) {
+      totalMoradores++;
+      let m = moradores[key];
+      let mCondominio = 0, mJuros = 0, mMulta = 0, mTotal = 0, mMaxDias = 0;
+
+      m.parcelas.forEach(p => {
+        const {dias, juros, multa, total} = calcParcela(p);
+        mCondominio += p.valor;
+        mJuros += juros;
+        mMulta += multa;
+        mTotal += total;
+        if (dias > mMaxDias) mMaxDias = dias;
+      });
+
+      gJuros += mJuros;
+      gMulta += mMulta;
+      gGeral += mTotal;
+      if (mMaxDias > gMaxDias) gMaxDias = mMaxDias;
+
+      lista.push({key, m, mCondominio, mJuros, mMulta, mTotal, mMaxDias});
+    }
+
+    if (ordenacao === 'nome') {
+      // Ordem alfabética pelo nome de exibição
+      lista.sort((a, b) => a.m.nomeExibicao.localeCompare(b.m.nomeExibicao, 'pt-BR'));
+      lista.forEach(item => tbody.appendChild(criarLinhaMorador(item.key, item.m, item)));
+
+    } else if (ordenacao === 'total') {
+      // Do maior para o menor valor total devido
+      lista.sort((a, b) => b.mTotal - a.mTotal);
+      lista.forEach(item => tbody.appendChild(criarLinhaMorador(item.key, item.m, item)));
+
+    } else {
+      // Agrupado por quadra (ordem alfabética das quadras), e dentro de cada
+      // quadra os moradores aparecem em ordem alfabética pelo nome.
+      const grupos = {};
+      lista.forEach(item => {
+        const q = getQuadra(item.m);
+        if (!grupos[q]) grupos[q] = [];
+        grupos[q].push(item);
+      });
+
+      const quadrasOrdenadas = Object.keys(grupos).sort((a, b) => {
+        if (a === 'SEM QUADRA') return 1;
+        if (b === 'SEM QUADRA') return -1;
+        return a.localeCompare(b, 'pt-BR');
+      });
+
+      quadrasOrdenadas.forEach(q => {
+        const itensDoGrupo = grupos[q].sort((a, b) => a.m.nomeExibicao.localeCompare(b.m.nomeExibicao, 'pt-BR'));
+        tbody.appendChild(criarLinhaCabecalhoQuadra(q, itensDoGrupo.length));
+        itensDoGrupo.forEach(item => tbody.appendChild(criarLinhaMorador(item.key, item.m, item)));
+      });
+    }
+
+    document.getElementById('geralMaxDias').textContent = gMaxDias;
+    document.getElementById('geralTotJuros').textContent = fmtBRL(gJuros);
+    document.getElementById('geralTotMultas').textContent = fmtBRL(gMulta);
+    document.getElementById('geralTotGeral').textContent = fmtBRL(gGeral);
+    document.getElementById('geralCount').textContent = totalMoradores + (totalMoradores === 1 ? ' morador registrado' : ' moradores registrados');
+  }
+
+  // Renderiza a ficha detalhada do morador selecionado
+  function renderIndividual() {
+    if (!moradorAtivoKey) return;
+    const m = moradores[moradorAtivoKey];
+
+    document.getElementById('tituloIndividual').value = m.nomeExibicao;
+    document.getElementById('quadraIndividual').value = m.quadra || '';
+
+    const tbody = document.getElementById('tbodyIndividual');
+    tbody.innerHTML = '';
+    let sJuros=0, sMulta=0, sTotal=0, maxDias=0;
+
+    m.parcelas.forEach(p => {
+      const {dias, juros, multa, total} = calcParcela(p);
+      sJuros += juros; sMulta += multa; sTotal += total;
+      if (dias > maxDias) maxDias = dias;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="col-parcela"><input type="text" data-field="nome" value="${p.nome}"></td>
+        <td class="col-date"><input type="date" data-field="venc" value="${p.venc}"></td>
+        <td class="col-date"><input type="date" data-field="ref" value="${p.ref}"></td>
+        <td class="col-num"><input type="number" step="0.01" data-field="valor" value="${p.valor}"></td>
+        <td class="col-dias"><span class="badge-dias ${dias>0?'atraso':'ok'}" data-role="dias">${dias}</span></td>
+        <td class="col-num"><span class="val-red" data-role="juros">${fmtBRL(juros)}</span></td>
+        <td class="col-num"><span class="val-red" data-role="multa">${fmtBRL(multa)}</span></td>
+        <td class="col-num"><span class="val-total" data-role="total">${fmtBRL(total)}</span></td>
+        <td><button class="rm-btn" title="remover parcela">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const field = inp.dataset.field;
+          p[field] = (field === 'valor') ? (parseFloat(inp.value) || 0) : inp.value;
+
+          // Se o usuário digitar manualmente no campo "Parcela", o nome deixa
+          // de ser atualizado automaticamente quando o vencimento mudar.
+          if (field === 'nome') {
+            p.nomeAuto = false;
+          }
+
+          // Ao escolher/alterar o vencimento, sugere automaticamente a
+          // abreviação do mês anterior — a menos que o nome já tenha sido
+          // editado manualmente pelo usuário para esta parcela.
+          if (field === 'venc' && p.nomeAuto !== false) {
+            p.nome = nomeAutomaticoParcela(p.venc);
+            const inputNome = tr.querySelector('input[data-field="nome"]');
+            if (inputNome) inputNome.value = p.nome;
+          }
+
+          // Atualiza apenas os valores calculados desta linha (e os totais),
+          // sem recriar os inputs — evita que o campo perca o foco a cada tecla.
+          atualizarLinha(tr, p);
+          atualizarTotaisIndividual();
+          agendarSalvamento();
+        });
+      });
+
+      tr.querySelector('.rm-btn').addEventListener('click', () => {
+        m.parcelas = m.parcelas.filter(x => x.id !== p.id);
+        renderIndividual();
+        agendarSalvamento();
+      });
+    });
+
+    document.getElementById('totJuros').textContent = fmtBRL(sJuros);
+    document.getElementById('totMultas').textContent = fmtBRL(sMulta);
+    document.getElementById('totGeral').textContent = fmtBRL(sTotal);
+    document.getElementById('parcelaCount').textContent = m.parcelas.length + (m.parcelas.length===1 ? ' parcela lançada' : ' parcelas lançadas');
+    document.getElementById('stampDias').textContent = maxDias > 0 ? maxDias : 0;
+  }
+
+  // Atualiza somente os campos calculados (dias, juros, multa, total) de UMA linha,
+  // sem tocar nos <input>. É isso que corrige o bug de só digitar 1 caractere por vez:
+  // antes, cada tecla digitada disparava renderIndividual(), que recriava a tabela
+  // inteira (incluindo os inputs) e o campo perdia o foco a cada letra.
+  function atualizarLinha(tr, p) {
+    const {dias, juros, multa, total} = calcParcela(p);
+    const spanDias = tr.querySelector('[data-role="dias"]');
+    spanDias.textContent = dias;
+    spanDias.className = 'badge-dias ' + (dias > 0 ? 'atraso' : 'ok');
+    tr.querySelector('[data-role="juros"]').textContent = fmtBRL(juros);
+    tr.querySelector('[data-role="multa"]').textContent = fmtBRL(multa);
+    tr.querySelector('[data-role="total"]').textContent = fmtBRL(total);
+  }
+
+  // Recalcula os totalizadores do rodapé (juros, multas, total geral e dias máximo)
+  // percorrendo o modelo de dados — também sem recriar a tabela.
+  function atualizarTotaisIndividual() {
+    if (!moradorAtivoKey) return;
+    const m = moradores[moradorAtivoKey];
+    let sJuros = 0, sMulta = 0, sTotal = 0, maxDias = 0;
+
+    m.parcelas.forEach(p => {
+      const {dias, juros, multa, total} = calcParcela(p);
+      sJuros += juros; sMulta += multa; sTotal += total;
+      if (dias > maxDias) maxDias = dias;
+    });
+
+    document.getElementById('totJuros').textContent = fmtBRL(sJuros);
+    document.getElementById('totMultas').textContent = fmtBRL(sMulta);
+    document.getElementById('totGeral').textContent = fmtBRL(sTotal);
+    document.getElementById('stampDias').textContent = maxDias > 0 ? maxDias : 0;
+  }
+
+  // Gera uma "key" única (slug) para o morador a partir do nome digitado,
+  // usada como chave no objeto `moradores`.
+  function gerarChaveMorador(nome) {
+    let base = nome
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+      .trim()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '_');
+    if (!base) base = 'morador';
+    let chave = base;
+    let i = 2;
+    while (moradores[chave]) {
+      chave = base + '_' + i;
+      i++;
+    }
+    return chave;
+  }
+
+  // Registra um novo morador na lista geral, com o livro de parcelas vazio.
+  function registrarNovoMorador(nome, quadra, unidade) {
+    nome = (nome || '').trim();
+    quadra = (quadra || '').trim();
+    unidade = (unidade || '').trim();
+
+    if (!nome) {
+      alert('Informe o nome do morador.');
+      return null;
+    }
+
+    const chave = gerarChaveMorador(nome);
+    const nomeExibicao = unidade
+      ? `${nome.toUpperCase()} · UNIDADE ${unidade.toUpperCase()}`
+      : nome.toUpperCase();
+
+    moradores[chave] = {
+      nomeExibicao: nomeExibicao,
+      quadra: quadra.toUpperCase(),
+      parcelas: []
+    };
+
+    renderGeral();
+    agendarSalvamento();
+    return chave;
+  }
+
+  // Exclui definitivamente o cadastro de um morador (e todas as suas parcelas).
+  function excluirMorador(key) {
+    const m = moradores[key];
+    if (!m) return;
+
+    const confirmado = confirm(
+      `Tem certeza que deseja excluir o cadastro de "${m.nomeExibicao}"?\n\n` +
+      `Todas as parcelas lançadas para este morador serão apagadas junto e essa ação não pode ser desfeita.`
+    );
+    if (!confirmado) return;
+
+    delete moradores[key];
+    if (moradorAtivoKey === key) moradorAtivoKey = null;
+    agendarSalvamento();
+    fecharMorador();
+  }
+
+  function abrirMorador(key) {
+    moradorAtivoKey = key;
+    document.getElementById('viewGeral').classList.add('hidden');
+    document.getElementById('viewIndividual').classList.remove('hidden');
+    renderIndividual();
+  }
+
+  function fecharMorador() {
+    moradorAtivoKey = null;
+    document.getElementById('viewIndividual').classList.add('hidden');
+    document.getElementById('viewGeral').classList.remove('remove');
+    document.getElementById('viewGeral').classList.remove('hidden');
+    renderGeral();
+  }
+
+  // EVENTOS
+  document.getElementById('btnVoltar').addEventListener('click', fecharMorador);
+
+  document.getElementById('btnExcluirMorador').addEventListener('click', () => {
+    if (!moradorAtivoKey) return;
+    excluirMorador(moradorAtivoKey);
+  });
+
+  document.getElementById('btnNovoMorador').addEventListener('click', () => {
+    const nomeInput = document.getElementById('novoMoradorNome');
+    const quadraInput = document.getElementById('novoMoradorQuadra');
+    const unidadeInput = document.getElementById('novoMoradorUnidade');
+    const chave = registrarNovoMorador(nomeInput.value, quadraInput.value, unidadeInput.value);
+    if (chave) {
+      nomeInput.value = '';
+      quadraInput.value = '';
+      unidadeInput.value = '';
+      nomeInput.focus();
+    }
+  });
+
+  // Permite cadastrar pressionando Enter em qualquer um dos três campos
+  ['novoMoradorNome', 'novoMoradorQuadra', 'novoMoradorUnidade'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('btnNovoMorador').click();
+      }
+    });
+  });
+
+  document.getElementById('btnAdd').addEventListener('click', () => {
+    if(!moradorAtivoKey) return;
+    const venc = todayISO;
+    moradores[moradorAtivoKey].parcelas.push({
+      id: 'p' + (nextIdCounter++), 
+      nome: nomeAutomaticoParcela(venc), 
+      valor: 0, 
+      venc: venc, 
+      ref: document.getElementById('dataRef').value || todayISO,
+      nomeAuto: true
+    });
+    renderIndividual();
+    agendarSalvamento();
+  });
+
+  document.getElementById('btnAplicarRef').addEventListener('click', () => {
+    if(!moradorAtivoKey) return;
+    const ref = document.getElementById('dataRef').value || todayISO;
+    moradores[moradorAtivoKey].parcelas.forEach(p => p.ref = ref);
+    renderIndividual();
+    agendarSalvamento();
+  });
+
+  document.getElementById('tituloIndividual').addEventListener('input', (e) => {
+    if(moradorAtivoKey) moradores[moradorAtivoKey].nomeExibicao = e.target.value;
+    agendarSalvamento();
+  });
+
+  document.getElementById('quadraIndividual').addEventListener('input', (e) => {
+    if(moradorAtivoKey) moradores[moradorAtivoKey].quadra = e.target.value.toUpperCase();
+    agendarSalvamento();
+  });
+
+  // Alterna o modo de ordenação/agrupamento da Lista Geral
+  document.getElementById('seletorOrdenacao').addEventListener('change', (e) => {
+    ordenacao = e.target.value;
+    renderGeral();
+  });
+
+  document.getElementById('taxaJuros').addEventListener('input', () => { renderIndividual(); agendarSalvamento(); });
+  document.getElementById('taxaMulta').addEventListener('input', () => { renderIndividual(); agendarSalvamento(); });
+
+  // A lista geral só é renderizada depois do login + carregamento dos dados
+  // (veja a função carregarDados() e o listener onAuthStateChanged acima).
+})();
+</script>
+
+</body></html>
