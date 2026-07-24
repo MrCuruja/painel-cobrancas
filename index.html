@@ -729,7 +729,14 @@
   .btn-primario:hover { background: #333; border-color: #333; }
   .btn-perigo { border-color: var(--danger); color: var(--danger); }
   .btn-perigo:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
-  .add-row.acoes { gap: 10px; flex-wrap: wrap; }
+  .add-row.acoes { gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .aviso-ref {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .aviso-ref.pendente { color: #a86500; font-weight: 600; }
 
   /* ---------- JANELA (MODAL) ---------- */
   .modal-overlay {
@@ -976,7 +983,9 @@
 
       <div class="add-row acoes">
         <button class="btn btn-primario" id="btnAbrirCadastro">+ Cadastrar morador</button>
+        <button class="btn" id="btnAtualizarRefGeral">Atualizar data de referência para hoje</button>
         <button class="btn" id="btnExportarCsv">Exportar CSV</button>
+        <span class="aviso-ref" id="avisoRef"></span>
       </div>
     </div>
 
@@ -1237,6 +1246,9 @@
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   }
   const todayISO = hojeISO();
+
+  // "2026-07-24" -> "24/07/2026"
+  const fmtData = iso => String(iso || '').split('-').reverse().join('/');
 
   function esc(s) {
     return String(s === undefined || s === null ? '' : s)
@@ -1616,6 +1628,7 @@
     $('geralTotMultas').textContent = fmtBRL(gMulta);
     $('geralTotGeral').textContent = fmtBRL(gGeral);
     $('geralCount').textContent = totalUnidades + (totalUnidades === 1 ? ' morador registrado' : ' moradores registrados');
+    atualizarAvisoRef();
 
     // --- tabela (respeita filtros, ordenação e agrupamento) ---
     const lista = ordenarLista(listaCompleta.filter(passaNoFiltro));
@@ -1887,7 +1900,67 @@
   }
 
   /* ==========================================================
-     11. EXPORTAÇÃO CSV
+     11. DATA DE REFERÊNCIA — ATUALIZAÇÃO EM MASSA
+     ==========================================================
+     A data de referência é o dia até o qual os juros de cada parcela
+     são calculados. Como ela fica gravada parcela a parcela, esta
+     rotina joga TODAS as parcelas em aberto, de TODOS os moradores,
+     para o dia de hoje de uma só vez. Parcelas já quitadas não são
+     tocadas: elas ficam congeladas na data em que foram baixadas.
+  */
+  function levantarReferencias() {
+    const hoje = hojeISO();
+    let parcelas = 0, atingidos = 0;
+    Object.keys(moradores).forEach(k => {
+      let n = 0;
+      moradores[k].parcelas.forEach(p => { if (!p.pago && p.ref !== hoje) n++; });
+      if (n) { parcelas += n; atingidos++; }
+    });
+    return { hoje, parcelas, atingidos };
+  }
+
+  function atualizarAvisoRef() {
+    const el = $('avisoRef');
+    if (!el) return;
+    const { hoje, parcelas, atingidos } = levantarReferencias();
+    if (parcelas === 0) {
+      el.className = 'aviso-ref';
+      el.textContent = `Juros calculados até ${fmtData(hoje)}.`;
+    } else {
+      el.className = 'aviso-ref pendente';
+      el.textContent = `${parcelas} ${parcelas === 1 ? 'parcela está' : 'parcelas estão'} com data de referência anterior a hoje, ` +
+        `em ${atingidos} ${atingidos === 1 ? 'morador' : 'moradores'}.`;
+    }
+  }
+
+  function atualizarReferenciaGeral() {
+    const { hoje, parcelas, atingidos } = levantarReferencias();
+
+    if (parcelas === 0) {
+      alert(`Nada a atualizar: todas as parcelas em aberto já calculam juros até ${fmtData(hoje)}.`);
+      return;
+    }
+
+    const ok = confirm(
+      `Atualizar a data de referência para ${fmtData(hoje)} em ${parcelas} ${parcelas === 1 ? 'parcela' : 'parcelas'} ` +
+      `de ${atingidos} ${atingidos === 1 ? 'morador' : 'moradores'}?\n\n` +
+      `Os juros passam a ser calculados até hoje e os totais da lista sobem de acordo. ` +
+      `Parcelas já marcadas como pagas não são alteradas.`
+    );
+    if (!ok) return;
+
+    Object.keys(moradores).forEach(k => {
+      moradores[k].parcelas.forEach(p => { if (!p.pago) p.ref = hoje; });
+    });
+
+    $('dataRef').value = hoje;
+    renderGeral();
+    if (moradorAtivoKey) renderIndividual();
+    agendarSalvamento();
+  }
+
+  /* ==========================================================
+     12. EXPORTAÇÃO CSV
      ========================================================== */
   function exportarCsv() {
     const num = v => (v || 0).toFixed(2).replace('.', ',');
@@ -1917,7 +1990,7 @@
   }
 
   /* ==========================================================
-     12. EVENTOS
+     13. EVENTOS
      ========================================================== */
   $('dataRef').value = todayISO;
   preencherSelect($('cadTipo'), TIPOS);
@@ -1949,7 +2022,8 @@
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); salvarCadastro(); } });
   });
 
-  // Exportação
+  // Exportação e data de referência
+  $('btnAtualizarRefGeral').addEventListener('click', atualizarReferenciaGeral);
   $('btnExportarCsv').addEventListener('click', exportarCsv);
 
   // Fecha a janela de cadastro ao clicar fora ou apertar Esc
