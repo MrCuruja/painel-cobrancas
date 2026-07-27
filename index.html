@@ -1755,14 +1755,18 @@
     );
     if (!ok) return;
     delete moradores[key];
-    if (moradorAtivoKey === key) moradorAtivoKey = null;
     agendarSalvamento();
-    fecharMorador();
+    voltarParaLista();
   }
 
   /* ==========================================================
      10. FICHA INDIVIDUAL
      ========================================================== */
+  // Ao abrir uma ficha, empilhamos um estado no histórico do navegador.
+  // Assim o botão "voltar" do navegador apenas retorna à lista geral,
+  // em vez de sair do site. O popstate (mais abaixo) faz o fechamento.
+  let fichaNoHistorico = false;
+
   function abrirMorador(key) {
     moradorAtivoKey = key;
     $('viewGeral').classList.add('hidden');
@@ -1770,6 +1774,19 @@
     renderFicha();
     renderIndividual();
     window.scrollTo(0, 0);
+    if (!fichaNoHistorico) {
+      history.pushState({ tela: 'ficha' }, '');
+      fichaNoHistorico = true;
+    }
+  }
+
+  // Fecha a ficha e volta para a lista. Quando o retorno parte de um
+  // controle da própria página (botão "Voltar" ou exclusão), pedimos
+  // history.back() para consumir o estado empilhado — o fechamento em si
+  // acontece no popstate, evitando entradas duplicadas no histórico.
+  function voltarParaLista() {
+    if (fichaNoHistorico) history.back();
+    else fecharMorador();
   }
 
   function fecharMorador() {
@@ -1778,6 +1795,14 @@
     $('viewGeral').classList.remove('hidden');
     renderGeral();
   }
+
+  window.addEventListener('popstate', () => {
+    // Voltou pelo navegador estando dentro de uma ficha: mostra a lista.
+    if (fichaNoHistorico) {
+      fichaNoHistorico = false;
+      if (moradorAtivoKey) fecharMorador();
+    }
+  });
 
   function renderFicha() {
     if (!moradorAtivoKey) return;
@@ -2035,7 +2060,7 @@
   });
 
   // Ficha individual
-  $('btnVoltar').addEventListener('click', fecharMorador);
+  $('btnVoltar').addEventListener('click', voltarParaLista);
   $('btnExcluirMorador').addEventListener('click', () => { if (moradorAtivoKey) excluirMorador(moradorAtivoKey); });
 
   document.querySelectorAll('.ficha [data-campo]').forEach(el => {
