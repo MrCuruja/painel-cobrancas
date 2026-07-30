@@ -405,6 +405,7 @@
     height: 28px;
   }
   .rm-btn:hover { background: var(--danger-bg); color: var(--danger); }
+  .rm-txt { display: none; }  /* rótulo textual só aparece no modo cartão (celular) */
 
   .add-row {
     padding: 16px;
@@ -519,6 +520,153 @@
     .stub { grid-template-columns: 1fr; gap: 16px; }
     .cover { flex-direction: column; text-align: center; align-items: center; }
     .stamp { margin-top: 12px; }
+  }
+
+  /* ===========================================================
+     RESPONSIVO — CELULAR (retrato)
+     As duas tabelas deixam de rolar na horizontal e viram uma
+     pilha de "cartões": cada linha ocupa a largura toda e cada
+     célula mostra o rótulo da coluna (via data-label) à esquerda
+     e o valor à direita. Muito mais legível num telefone.
+     =========================================================== */
+  @media (max-width: 600px) {
+    body { padding: 16px 12px; }
+    .wrap { gap: 16px; }
+
+    .cover { padding: 22px 18px; }
+    h1.title { font-size: clamp(20px, 6vw, 26px); }
+    .subtitle { font-size: 13px; }
+    .stamp { width: 92px; height: 92px; }
+    .stamp .n { font-size: 26px; }
+
+    /* Painel de indicadores: 2 por linha */
+    .dash { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi { padding: 14px 15px; }
+    .kpi .k-value { font-size: 20px; }
+
+    /* Filtros: 1 por linha, mais alvo de toque */
+    .filtros { grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+    .filtro.filtro-busca { grid-column: 1 / -1; }
+    .filtros-rodape { padding: 12px 14px; }
+
+    /* Barra de ações: botões ocupam a largura toda */
+    .add-row.acoes { flex-direction: column; align-items: stretch; }
+    .add-row.acoes .btn { width: 100%; text-align: center; }
+    .aviso-ref { text-align: center; margin-top: 4px; }
+
+    #statusBar { padding: 0 2px; }
+
+    /* --------- TABELAS EM MODO CARTÃO --------- */
+    .table-container { overflow-x: visible; }
+
+    .ledger, .ledger tbody, .ledger tr, .ledger td { display: block; width: 100%; }
+    .ledger thead { display: none; }
+
+    .ledger tbody tr {
+      border: 1px solid var(--bg-main);
+      border-radius: var(--radius-md);
+      margin: 12px;
+      padding: 6px 4px;
+      background: var(--bg-card);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .ledger.clickable tbody tr:hover { background-color: var(--bg-card); }
+
+    .ledger td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--bg-main);
+      text-align: right;
+    }
+    .ledger tr td:last-child { border-bottom: none; }
+
+    /* Rótulo da coluna à esquerda de cada valor */
+    .ledger td[data-label]::before {
+      content: attr(data-label);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      text-align: left;
+      flex: 0 0 auto;
+      margin-right: auto;
+    }
+
+    /* Nome do morador: faixa de destaque no topo do cartão */
+    .celula-nome {
+      justify-content: flex-start !important;
+      text-align: left !important;
+      background: var(--bg-main);
+      border-radius: var(--radius-sm);
+      margin: 2px 6px 4px;
+      padding: 12px 14px !important;
+      border-bottom: none !important;
+    }
+    .celula-nome .link-morador { font-size: 16px; }
+    .celula-nome .sub-linha { margin-top: 2px; }
+
+    /* Cabeçalho de grupo continua como faixa cheia */
+    tr.quadra-header { margin: 12px 12px 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
+    tr.quadra-header td { display: block; text-align: left; padding: 10px 14px; }
+    tr.quadra-header td::before { content: none; }
+
+    /* Célula de estado vazio ocupa o cartão inteiro, sem rótulo */
+    td.vazio { display: block; text-align: center; }
+    td.vazio::before { content: none; }
+
+    /* Inputs da ficha de parcelas: largura confortável no cartão */
+    .ledger td .chk-pago { width: 22px; height: 22px; }
+    .ledger input[type=text], .ledger input[type=number], .ledger input[type=date] {
+      max-width: 62%;
+      font-size: 15px;   /* >=16px evita o zoom automático do iOS ao focar */
+      padding: 8px 10px;
+    }
+    .ledger input[type=number] { max-width: 50%; }
+
+    /* Botão remover parcela: vira ação clara em vez de um "x" */
+    .col-remover { justify-content: center !important; }
+    .col-remover .rm-btn {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      background: transparent;
+      border-radius: var(--radius-sm);
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .col-remover .rm-btn:hover { background: var(--danger); color: #fff; }
+    .col-remover .rm-txt { display: inline; margin-left: 4px; }
+
+    /* Cabeçalho da ficha individual */
+    .view-individual-header { flex-direction: column; align-items: stretch; gap: 10px; }
+    .view-individual-header .btn-excluir-morador { width: 100%; text-align: center; }
+    .ficha { padding: 20px 16px; }
+
+    /* Janela de cadastro */
+    .modal-overlay { padding: 16px 10px; }
+    .modal { padding: 22px 18px; }
+    .modal-acoes { flex-direction: column-reverse; }
+    .modal-acoes .btn { width: 100%; text-align: center; }
+  }
+
+  @media (max-width: 400px) {
+    .dash { grid-template-columns: 1fr; }
+    .filtros { grid-template-columns: 1fr; }
+    .filtro.filtro-busca { grid-column: auto; }
+    h1.title { font-size: 20px; }
+  }
+
+  /* Alvos de toque um pouco maiores em telas sensíveis ao toque */
+  @media (hover: none) and (pointer: coarse) {
+    .btn, .filtro select, .filtro input, .campo input, .campo select { min-height: 44px; }
+    .ledger.clickable tbody tr { -webkit-tap-highlight-color: rgba(0,113,231,0.08); }
   }
 
   /* ---------- LOGIN / STATUS DE SINCRONIZAÇÃO ---------- */
@@ -917,7 +1065,7 @@
 
     <div class="book">
       <div class="filtros">
-        <div class="filtro">
+        <div class="filtro filtro-busca">
           <label for="fBusca">Buscar</label>
           <input type="search" id="fBusca" placeholder="Nome, unidade ou telefone">
         </div>
@@ -1559,17 +1707,17 @@
     const st = STATUS[status];
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>
+      <td class="celula-nome">
         <span class="link-morador">${esc(m.nome || '(sem nome)')}</span>
         ${m.telefone ? `<span class="sub-linha">${esc(m.telefone)}</span>` : ''}
       </td>
-      <td class="col-unidade">${esc(m.unidade || '—')}</td>
-      <td class="col-quadra"><span class="badge-quadra">${esc(m.quadra || '—')}</span></td>
-      <td class="col-tipo"><span class="badge-tipo">${esc(m.tipo)}</span></td>
-      <td class="col-status"><span class="badge-status ${st.classe}">${esc(st.label)}</span></td>
-      <td class="col-dias"><span class="badge-dias ${r.maxDias > 0 ? 'atraso' : 'ok'}">${r.maxDias}</span></td>
-      <td class="col-dias">${r.abertas}</td>
-      <td class="col-num ${r.total > 0 ? 'val-total' : ''}">${r.total > 0 ? fmtBRL(r.total) : '—'}</td>
+      <td class="col-unidade" data-label="Unidade">${esc(m.unidade || '—')}</td>
+      <td class="col-quadra" data-label="Quadra"><span class="badge-quadra">${esc(m.quadra || '—')}</span></td>
+      <td class="col-tipo" data-label="Tipo"><span class="badge-tipo">${esc(m.tipo)}</span></td>
+      <td class="col-status" data-label="Adimplência"><span class="badge-status ${st.classe}">${esc(st.label)}</span></td>
+      <td class="col-dias" data-label="Atraso máx."><span class="badge-dias ${r.maxDias > 0 ? 'atraso' : 'ok'}">${r.maxDias}</span></td>
+      <td class="col-dias" data-label="Parcelas em aberto">${r.abertas}</td>
+      <td class="col-num ${r.total > 0 ? 'val-total' : ''}" data-label="Total devido">${r.total > 0 ? fmtBRL(r.total) : '—'}</td>
     `;
     tr.addEventListener('click', () => abrirMorador(key));
     return tr;
@@ -1850,16 +1998,16 @@
       const tr = document.createElement('tr');
       if (p.pago) tr.className = 'parcela-paga';
       tr.innerHTML = `
-        <td class="col-pago"><input type="checkbox" class="chk-pago" data-field="pago" ${p.pago ? 'checked' : ''} title="marcar parcela como paga"></td>
-        <td class="col-parcela"><input type="text" data-field="nome" value="${esc(p.nome)}"></td>
-        <td class="col-date"><input type="date" data-field="venc" value="${esc(p.venc)}"></td>
-        <td class="col-date"><input type="date" data-field="ref" value="${esc(p.ref)}"></td>
-        <td class="col-num"><input type="number" step="0.01" data-field="valor" value="${p.valor}"></td>
-        <td class="col-dias"><span class="badge-dias ${dias > 0 && !p.pago ? 'atraso' : 'ok'}" data-role="dias">${dias}</span></td>
-        <td class="col-num"><span class="val-red" data-role="juros">${fmtBRL(juros)}</span></td>
-        <td class="col-num"><span class="val-red" data-role="multa">${fmtBRL(multa)}</span></td>
-        <td class="col-num"><span class="val-total" data-role="total">${fmtBRL(total)}</span></td>
-        <td><button class="rm-btn" title="remover parcela">✕</button></td>
+        <td class="col-pago" data-label="Pago"><input type="checkbox" class="chk-pago" data-field="pago" ${p.pago ? 'checked' : ''} title="marcar parcela como paga"></td>
+        <td class="col-parcela" data-label="Parcela"><input type="text" data-field="nome" value="${esc(p.nome)}"></td>
+        <td class="col-date" data-label="Vencimento"><input type="date" data-field="venc" value="${esc(p.venc)}"></td>
+        <td class="col-date" data-label="Data ref."><input type="date" data-field="ref" value="${esc(p.ref)}"></td>
+        <td class="col-num" data-label="Condomínio"><input type="number" step="0.01" data-field="valor" value="${p.valor}"></td>
+        <td class="col-dias" data-label="Dias em atraso"><span class="badge-dias ${dias > 0 && !p.pago ? 'atraso' : 'ok'}" data-role="dias">${dias}</span></td>
+        <td class="col-num" data-label="Juros"><span class="val-red" data-role="juros">${fmtBRL(juros)}</span></td>
+        <td class="col-num" data-label="Multa"><span class="val-red" data-role="multa">${fmtBRL(multa)}</span></td>
+        <td class="col-num" data-label="Total a pagar"><span class="val-total" data-role="total">${fmtBRL(total)}</span></td>
+        <td class="col-remover"><button class="rm-btn" title="remover parcela">✕ <span class="rm-txt">Remover parcela</span></button></td>
       `;
       tbody.appendChild(tr);
 
