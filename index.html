@@ -615,6 +615,13 @@
     }
     .ledger tr td:last-child { border-bottom: none; }
 
+    /* Lista de moradores compacta no celular: mostra apenas Nome, Unidade,
+       Adimplência e Total devido. As demais colunas ficam ocultas aqui
+       (a ficha individual de parcelas não é afetada). */
+    .ledger.clickable td.col-quadra,
+    .ledger.clickable td.col-tipo,
+    .ledger.clickable td.col-dias { display: none; }
+
     /* Rótulo da coluna à esquerda de cada valor */
     .ledger td[data-label]::before {
       content: attr(data-label);
