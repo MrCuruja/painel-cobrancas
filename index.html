@@ -547,6 +547,12 @@
     margin-top: 10px;
   }
 
+  /* Componentes que só aparecem no celular (retrato). No desktop ficam ocultos. */
+  .filtros-toggle { display: none; }
+  .filtros-badge  { display: none; }
+  .fab-cadastro   { display: none; }
+  .sub-unidade    { display: none; }
+
   @media (max-width: 850px) {
     .assumptions { grid-template-columns: 1fr; }
     .stub { grid-template-columns: 1fr; gap: 16px; }
@@ -562,8 +568,13 @@
      e o valor à direita. Muito mais legível num telefone.
      =========================================================== */
   @media (max-width: 600px) {
-    body { padding: 16px 12px; }
+    body { padding: 16px 12px 92px; }
     .wrap { gap: 16px; }
+
+    /* A capa da lista perde o texto descritivo longo no celular para
+       encurtar a rolagem até a lista de moradores. */
+    #viewGeral .cover-desc { display: none; }
+    #viewGeral .cover { padding: 18px 16px; }
 
     .cover { padding: 22px 18px; }
     h1.title { font-size: clamp(20px, 6vw, 26px); }
@@ -571,9 +582,26 @@
     .stamp { width: 92px; height: 92px; }
     .stamp .n { font-size: 26px; }
 
-    /* Painel de indicadores: 2 por linha */
-    .dash { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi { padding: 14px 15px; }
+    /* Painel de indicadores: faixa horizontal deslizável (economiza altura).
+       Um "espião" do próximo cartão sinaliza que dá para arrastar de lado. */
+    .dash {
+      display: flex;
+      grid-template-columns: none;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -12px;
+      padding: 0 12px 4px;
+      scrollbar-width: none;
+    }
+    .dash::-webkit-scrollbar { display: none; }
+    .kpi {
+      scroll-snap-align: start;
+      flex: 0 0 46%;
+      min-width: 148px;
+      padding: 14px 15px;
+    }
     .kpi .k-value { font-size: 20px; }
 
     /* Filtros: 1 por linha, mais alvo de toque */
@@ -615,12 +643,17 @@
     }
     .ledger tr td:last-child { border-bottom: none; }
 
-    /* Lista de moradores compacta no celular: mostra apenas Nome, Unidade,
-       Adimplência e Total devido. As demais colunas ficam ocultas aqui
-       (a ficha individual de parcelas não é afetada). */
+    /* Lista de moradores compacta no celular: cada cartão mostra o nome
+       (com unidade/quadra logo abaixo), a adimplência e o total devido.
+       As colunas repetidas ficam ocultas — a ficha individual de parcelas
+       não é afetada, pois usa uma tabela sem a classe .clickable. */
+    .ledger.clickable td.col-unidade,
     .ledger.clickable td.col-quadra,
     .ledger.clickable td.col-tipo,
     .ledger.clickable td.col-dias { display: none; }
+
+    /* Unidade e quadra passam a aparecer como subtítulo do nome. */
+    .sub-unidade { display: block; }
 
     /* Rótulo da coluna à esquerda de cada valor */
     .ledger td[data-label]::before {
@@ -637,16 +670,34 @@
 
     /* Nome do morador: faixa de destaque no topo do cartão */
     .celula-nome {
+      position: relative;
+      flex-direction: column;
+      align-items: flex-start !important;
       justify-content: flex-start !important;
       text-align: left !important;
       background: var(--bg-main);
       border-radius: var(--radius-sm);
       margin: 2px 6px 4px;
-      padding: 12px 14px !important;
+      padding: 12px 36px 12px 14px !important;
       border-bottom: none !important;
     }
     .celula-nome .link-morador { font-size: 16px; }
-    .celula-nome .sub-linha { margin-top: 2px; }
+    .celula-nome .sub-linha { margin-top: 3px; }
+    /* Seta indicando que o cartão inteiro abre a ficha do morador. */
+    .celula-nome::after {
+      content: "›";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      line-height: 1;
+      color: var(--text-muted);
+    }
+
+    /* Total devido em destaque dentro do cartão. */
+    .ledger.clickable td.col-num { font-size: 15px; }
+    .ledger.clickable td.col-num.val-total { font-weight: 700; }
 
     /* Cabeçalho de grupo continua como faixa cheia */
     tr.quadra-header { margin: 12px 12px 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
@@ -693,6 +744,79 @@
     .modal { padding: 22px 18px; }
     .modal-acoes { flex-direction: column-reverse; }
     .modal-acoes .btn { width: 100%; text-align: center; }
+
+    /* --------- FILTROS RECOLHÍVEIS ---------
+       No celular só a busca fica visível. Os demais filtros e a ordenação
+       ficam escondidos atrás de um botão, para que a lista de moradores
+       apareça logo abaixo da busca sem uma rolagem longa. */
+    .filtros .filtro:not(.filtro-busca) { display: none; }
+    .book.mostra-filtros .filtros .filtro { display: flex; }
+
+    .filtros-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      grid-column: 1 / -1;
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+    .filtros-toggle .filtros-toggle-rot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filtros-toggle .chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .book.mostra-filtros .filtros-toggle .chevron { transform: rotate(180deg); }
+
+    .filtros-badge {
+      display: none;
+      min-width: 20px;
+      height: 20px;
+      line-height: 20px;
+      padding: 0 6px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .filtros-badge.tem { display: inline-block; }
+
+    /* --------- BOTÃO FLUTUANTE: CADASTRAR MORADOR --------- */
+    .fab-cadastro {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 56px;
+      height: 56px;
+      padding-bottom: 3px;
+      border: none;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 30px;
+      line-height: 1;
+      box-shadow: 0 6px 20px rgba(0, 113, 231, 0.4);
+      cursor: pointer;
+      z-index: 500;
+      transition: transform 0.12s ease, background 0.2s ease;
+    }
+    .fab-cadastro:active { transform: scale(0.93); }
   }
 
   @media (max-width: 400px) {
@@ -1060,12 +1184,14 @@
 
   <!-- ================= LISTA GERAL ================= -->
   <div id="viewGeral" class="wrap" style="gap: 24px; margin: 0; max-width: 100%;">
+    <!-- Atalho flutuante (só no celular) para cadastrar um morador rapidamente -->
+    <button type="button" class="fab-cadastro" id="fabCadastro" aria-label="Cadastrar morador" title="Cadastrar morador">+</button>
     <div class="cover">
       <img class="app-logo cover-logo" alt="Monte Verde Residencial">
       <div class="cover-info">
         <div class="eyebrow">Painel de Controle do Condomínio</div>
         <h1 class="title">Cadastro Geral de Moradores</h1>
-        <div class="subtitle">Todas as unidades do condomínio, adimplentes e inadimplentes, classificadas por quadra, tipo de residência e situação de cobrança. Clique em qualquer morador para abrir a ficha e o livro de parcelas.</div>
+        <div class="subtitle cover-desc">Todas as unidades do condomínio, adimplentes e inadimplentes, classificadas por quadra, tipo de residência e situação de cobrança. Toque em qualquer morador para abrir a ficha e o livro de parcelas.</div>
       </div>
       <div class="stamp">
         <div>
@@ -1110,6 +1236,10 @@
           <label for="fBusca">Buscar</label>
           <input type="search" id="fBusca" placeholder="Nome, unidade ou telefone">
         </div>
+        <button type="button" class="filtros-toggle" id="btnToggleFiltros" aria-expanded="false" aria-controls="fQuadra">
+          <span class="filtros-toggle-rot">Filtros e ordenação <span class="filtros-badge" id="filtrosBadge"></span></span>
+          <span class="chevron">▾</span>
+        </button>
         <div class="filtro">
           <label for="fQuadra">Quadra</label>
           <select id="fQuadra"><option value="">Todas</option></select>
@@ -1747,9 +1877,14 @@
     const { key, m, r, status } = item;
     const st = STATUS[status];
     const tr = document.createElement('tr');
+    const infoUnidade = [
+      m.unidade ? 'Unidade ' + esc(m.unidade) : '',
+      m.quadra ? 'Quadra ' + esc(m.quadra) : ''
+    ].filter(Boolean).join(' · ');
     tr.innerHTML = `
       <td class="celula-nome">
         <span class="link-morador">${esc(m.nome || '(sem nome)')}</span>
+        ${infoUnidade ? `<span class="sub-linha sub-unidade">${infoUnidade}</span>` : ''}
         ${m.telefone ? `<span class="sub-linha">${esc(m.telefone)}</span>` : ''}
       </td>
       <td class="col-unidade" data-label="Unidade">${esc(m.unidade || '—')}</td>
@@ -1826,6 +1961,14 @@
     $('contadorFiltro').textContent = totalUnidades === 0
       ? 'Nenhum morador cadastrado ainda'
       : `Exibindo ${lista.length} de ${totalUnidades} moradores · ${fmtBRL(totalFiltrado)} em aberto nesta seleção`;
+
+    // Marca no botão de filtros (celular) quantos filtros estão ativos.
+    const filtrosAtivos = ['quadra', 'tipo', 'status', 'ocupacao'].filter(k => filtros[k]).length;
+    const badgeFiltros = $('filtrosBadge');
+    if (badgeFiltros) {
+      badgeFiltros.textContent = filtrosAtivos || '';
+      badgeFiltros.classList.toggle('tem', filtrosAtivos > 0);
+    }
 
     if (totalUnidades === 0) {
       tbody.innerHTML = `<tr><td colspan="8" class="vazio">Nenhum morador cadastrado.<br>
@@ -2227,6 +2370,16 @@
     $('fBusca').value = ''; $('fQuadra').value = ''; $('fTipo').value = ''; $('fStatus').value = ''; $('fOcupacao').value = '';
     renderGeral();
   });
+
+  // Abre/fecha o bloco de filtros e ordenação no celular.
+  $('btnToggleFiltros').addEventListener('click', function () {
+    const book = this.closest('.book');
+    const aberto = book.classList.toggle('mostra-filtros');
+    this.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+  });
+
+  // Botão flutuante do celular: mesmo cadastro do botão principal.
+  $('fabCadastro').addEventListener('click', abrirModalCadastro);
 
   // Cadastro
   $('btnAbrirCadastro').addEventListener('click', abrirModalCadastro);
