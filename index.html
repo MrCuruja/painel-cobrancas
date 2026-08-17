@@ -824,6 +824,32 @@
     }
     .ficha.aberta .ficha-chevron { transform: rotate(180deg); }
 
+    /* --------- PARÂMETROS DE CÁLCULO EM ACORDEÃO --------- */
+    .assumptions-cabecalho {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    .assumptions-titulo { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .assumptions-cabecalho .param-chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    .assumptions-bloco.aberta .param-chevron { transform: rotate(180deg); }
+    .assumptions { display: none; }
+    .assumptions-bloco.aberta .assumptions { display: grid; margin-top: 12px; }
+
     /* --------- PARCELAS: CARTÃO COMPACTO EM ACORDEÃO --------- */
     /* Cada parcela mostra só o resumo (nome, vencimento, situação e total).
        Os campos editáveis aparecem ao tocar no cartão. */
@@ -1284,6 +1310,8 @@
      só existem no celular; no desktop ficam ocultos. */
   .ficha-chevron { display: none; }
   .parcela-resumo { display: none; }
+  /* O cabeçalho do acordeão de parâmetros de cálculo também é só do celular. */
+  .assumptions-cabecalho { display: none; }
 
   /* ---------- PARCELAS QUITADAS ---------- */
   .col-pago { width: 56px; text-align: center; }
@@ -1555,19 +1583,25 @@
       </div>
     </div>
 
-    <div class="assumptions">
-      <div class="assumption">
-        <label>Taxa de juros ao mês</label>
-        <div class="row"><input id="taxaJuros" type="number" step="0.01" value="1"><span class="unit">%</span></div>
+    <div class="assumptions-bloco" id="paramBloco">
+      <div class="assumptions-cabecalho" id="paramCabecalho">
+        <div class="assumptions-titulo">Parâmetros de cálculo (juros, multa e data)</div>
+        <span class="chevron param-chevron">▾</span>
       </div>
-      <div class="assumption">
-        <label>Multa por atraso</label>
-        <div class="row"><input id="taxaMulta" type="number" step="0.01" value="2"><span class="unit">%</span></div>
-      </div>
-      <div class="assumption">
-        <label>Data de referência (hoje)</label>
-        <div class="row" style="margin-bottom: 4px;"><input id="dataRef" type="date"></div>
-        <button id="btnAplicarRef">Aplicar a todas as parcelas</button>
+      <div class="assumptions">
+        <div class="assumption">
+          <label>Taxa de juros ao mês</label>
+          <div class="row"><input id="taxaJuros" type="number" step="0.01" value="1"><span class="unit">%</span></div>
+        </div>
+        <div class="assumption">
+          <label>Multa por atraso</label>
+          <div class="row"><input id="taxaMulta" type="number" step="0.01" value="2"><span class="unit">%</span></div>
+        </div>
+        <div class="assumption">
+          <label>Data de referência (hoje)</label>
+          <div class="row" style="margin-bottom: 4px;"><input id="dataRef" type="date"></div>
+          <button id="btnAplicarRef">Aplicar a todas as parcelas</button>
+        </div>
       </div>
     </div>
 
@@ -2321,6 +2355,7 @@
     const m = moradores[moradorAtivoKey];
     // No celular, os dados cadastrais começam recolhidos a cada morador aberto.
     $('fichaBloco').classList.remove('aberta');
+    $('paramBloco').classList.remove('aberta');
     $('fiNome').value = m.nome;
     $('fiUnidade').value = m.unidade;
     $('fiQuadra').value = m.quadra;
@@ -2642,6 +2677,11 @@
   // Acordeão dos dados cadastrais (celular): o cabeçalho abre/fecha o formulário.
   $('fichaCabecalho').addEventListener('click', () => {
     if (ehCelular()) $('fichaBloco').classList.toggle('aberta');
+  });
+
+  // Acordeão dos parâmetros de cálculo (celular).
+  $('paramCabecalho').addEventListener('click', () => {
+    if (ehCelular()) $('paramBloco').classList.toggle('aberta');
   });
 
   document.querySelectorAll('.ficha [data-campo]').forEach(el => {
