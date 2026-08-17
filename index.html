@@ -121,6 +121,27 @@
   }
   .btn-excluir-morador:hover { background: var(--danger); color: #fff; }
 
+  /* Zona isolada da ação destrutiva, no fim da ficha. */
+  .zona-perigo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--danger-bg);
+    border: 1px solid #ffd3cf;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-top: 4px;
+  }
+  .zona-perigo-texto {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    flex: 1;
+    min-width: 200px;
+  }
+
   /* ---------- HEADER / CAPA ---------- */
   .cover {
     background: var(--bg-card);
@@ -908,7 +929,8 @@
 
     /* Cabeçalho da ficha individual */
     .view-individual-header { flex-direction: column; align-items: stretch; gap: 10px; }
-    .view-individual-header .btn-excluir-morador { width: 100%; text-align: center; }
+    .zona-perigo { flex-direction: column; align-items: stretch; text-align: center; padding: 16px; }
+    .zona-perigo .btn-excluir-morador { width: 100%; text-align: center; }
     .ficha { padding: 20px 16px; }
 
     /* Janela de cadastro */
@@ -1306,12 +1328,15 @@
     flex-wrap: wrap;
   }
   .ficha-cab-dir { display: inline-flex; align-items: center; gap: 10px; }
-  /* A seta do acordeão de dados cadastrais e o resumo compacto de parcela
-     só existem no celular; no desktop ficam ocultos. */
-  .ficha-chevron { display: none; }
-  .parcela-resumo { display: none; }
-  /* O cabeçalho do acordeão de parâmetros de cálculo também é só do celular. */
-  .assumptions-cabecalho { display: none; }
+  /* Estes elementos são exclusivos do celular. Escondê-los apenas no desktop
+     (min-width) evita conflito de ordem com as regras da media query de celular
+     — declarar display:none na base, depois da media query, apagava os cartões
+     de acordeão no telefone. */
+  @media (min-width: 601px) {
+    .ficha-chevron,
+    .parcela-resumo,
+    .assumptions-cabecalho { display: none; }
+  }
 
   /* ---------- PARCELAS QUITADAS ---------- */
   .col-pago { width: 56px; text-align: center; }
@@ -1509,7 +1534,6 @@
   <div id="viewIndividual" class="wrap hidden" style="gap: 24px; margin: 0; max-width: 100%;">
     <div class="view-individual-header">
       <button class="btn-back" id="btnVoltar">← Voltar para a Lista Geral</button>
-      <button class="btn-excluir-morador" id="btnExcluirMorador">🗑 Excluir cadastro do morador</button>
     </div>
 
     <div class="cover">
@@ -1645,6 +1669,12 @@
         <div class="value" id="totGeral">R$&nbsp;0,00</div>
       </div>
       <div class="paid-count" id="parcelaCount">0 parcelas lançadas</div>
+    </div>
+
+    <!-- Ação destrutiva isolada no fim da ficha, longe do botão Voltar. -->
+    <div class="zona-perigo">
+      <div class="zona-perigo-texto">Encerrar o cadastro apaga o morador e todas as suas parcelas. Esta ação não pode ser desfeita.</div>
+      <button class="btn-excluir-morador" id="btnExcluirMorador">🗑 Excluir cadastro do morador</button>
     </div>
   </div>
 
