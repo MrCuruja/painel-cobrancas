@@ -782,7 +782,7 @@
     tr.grupo-header.aberto + tr.linha-morador { margin-top: 4px; }
 
     /* Célula de estado vazio ocupa o cartão inteiro, sem rótulo */
-    td.vazio { display: block; text-align: center; }
+    .ledger td.vazio { display: block; text-align: center; }
     td.vazio::before { content: none; }
 
     /* Inputs da ficha de parcelas: largura confortável no cartão */
@@ -810,6 +810,75 @@
     }
     .col-remover .rm-btn:hover { background: var(--danger); color: #fff; }
     .col-remover .rm-txt { display: inline; margin-left: 4px; }
+
+    /* --------- FICHA: DADOS CADASTRAIS EM ACORDEÃO --------- */
+    /* Os campos de cadastro ficam recolhidos; o cabeçalho abre/fecha. */
+    .ficha-cabecalho { cursor: pointer; }
+    .ficha .form-grid { display: none; }
+    .ficha.aberta .form-grid { display: grid; margin-top: 16px; }
+    .ficha-chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .ficha.aberta .ficha-chevron { transform: rotate(180deg); }
+
+    /* --------- PARCELAS: CARTÃO COMPACTO EM ACORDEÃO --------- */
+    /* Cada parcela mostra só o resumo (nome, vencimento, situação e total).
+       Os campos editáveis aparecem ao tocar no cartão. */
+    .ledger:not(.clickable) tbody tr.parcela { padding: 0; }
+
+    .ledger:not(.clickable) td.parcela-resumo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: none;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    .parcela-resumo .pr-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      margin-right: auto;
+    }
+    .parcela-resumo .pr-nome {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .parcela-resumo .pr-sub { font-size: 11px; color: var(--text-muted); }
+    .parcela-resumo .pr-valor {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    .parcela-resumo .chevron {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    tr.parcela.aberta .parcela-resumo .chevron { transform: rotate(180deg); }
+    tr.parcela.parcela-paga .parcela-resumo .pr-nome { color: var(--text-muted); }
+    tr.parcela.parcela-paga .parcela-resumo .pr-valor {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    /* Detalhes (campos editáveis) escondidos até o cartão abrir. */
+    .ledger:not(.clickable) tr.parcela td:not(.parcela-resumo) { display: none; }
+    .ledger:not(.clickable) tr.parcela.aberta td:not(.parcela-resumo) { display: flex; }
+    tr.parcela.aberta .parcela-resumo { border-bottom: 1px solid var(--bg-main); }
 
     /* Cabeçalho da ficha individual */
     .view-individual-header { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -1210,6 +1279,11 @@
     gap: 12px;
     flex-wrap: wrap;
   }
+  .ficha-cab-dir { display: inline-flex; align-items: center; gap: 10px; }
+  /* A seta do acordeão de dados cadastrais e o resumo compacto de parcela
+     só existem no celular; no desktop ficam ocultos. */
+  .ficha-chevron { display: none; }
+  .parcela-resumo { display: none; }
 
   /* ---------- PARCELAS QUITADAS ---------- */
   .col-pago { width: 56px; text-align: center; }
@@ -1425,10 +1499,13 @@
     </div>
 
     <!-- DADOS CADASTRAIS -->
-    <div class="ficha">
-      <div class="ficha-cabecalho">
+    <div class="ficha" id="fichaBloco">
+      <div class="ficha-cabecalho" id="fichaCabecalho">
         <div class="ficha-titulo">Dados cadastrais da unidade</div>
-        <span class="badge-status" id="fichaStatus">—</span>
+        <span class="ficha-cab-dir">
+          <span class="badge-status" id="fichaStatus">—</span>
+          <span class="chevron ficha-chevron">▾</span>
+        </span>
       </div>
       <div class="form-grid">
         <div class="campo">
@@ -2242,6 +2319,8 @@
   function renderFicha() {
     if (!moradorAtivoKey) return;
     const m = moradores[moradorAtivoKey];
+    // No celular, os dados cadastrais começam recolhidos a cada morador aberto.
+    $('fichaBloco').classList.remove('aberta');
     $('fiNome').value = m.nome;
     $('fiUnidade').value = m.unidade;
     $('fiQuadra').value = m.quadra;
@@ -2269,6 +2348,14 @@
       `${m.tipo} · ${m.ocupacao} · quadra ${m.quadra || '—'} · vencimento todo dia ${m.diaVencimento} · taxa mensal ${fmtBRL(m.valorTaxa)}`;
   }
 
+  // Linha-resumo compacta de uma parcela (mostrada no cartão do celular).
+  function resumoSubParcela(p, dias) {
+    const base = 'venc. ' + fmtData(p.venc);
+    if (p.pago) return base + ' · paga';
+    if (dias > 0) return base + ' · ' + dias + (dias === 1 ? ' dia em atraso' : ' dias em atraso');
+    return base + ' · em dia';
+  }
+
   function renderIndividual() {
     if (!moradorAtivoKey) return;
     const m = moradores[moradorAtivoKey];
@@ -2283,8 +2370,16 @@
     m.parcelas.forEach(p => {
       const { dias, juros, multa, total } = calcParcela(p);
       const tr = document.createElement('tr');
-      if (p.pago) tr.className = 'parcela-paga';
+      tr.className = 'parcela' + (p.pago ? ' parcela-paga' : '');
       tr.innerHTML = `
+        <td class="parcela-resumo" data-role="resumo">
+          <span class="pr-info">
+            <span class="pr-nome">${esc(p.nome || '(sem nome)')}</span>
+            <span class="pr-sub">${resumoSubParcela(p, dias)}</span>
+          </span>
+          <span class="pr-valor" data-role="resumo-total">${fmtBRL(total)}</span>
+          <span class="chevron">▾</span>
+        </td>
         <td class="col-pago" data-label="Pago"><input type="checkbox" class="chk-pago" data-field="pago" ${p.pago ? 'checked' : ''} title="marcar parcela como paga"></td>
         <td class="col-parcela" data-label="Parcela"><input type="text" data-field="nome" value="${esc(p.nome)}"></td>
         <td class="col-date" data-label="Vencimento"><input type="date" data-field="venc" value="${esc(p.venc)}"></td>
@@ -2297,6 +2392,11 @@
         <td class="col-remover"><button class="rm-btn" title="remover parcela">✕ <span class="rm-txt">Remover parcela</span></button></td>
       `;
       tbody.appendChild(tr);
+
+      // Toca no resumo -> abre/fecha os campos editáveis da parcela (celular).
+      tr.querySelector('.parcela-resumo').addEventListener('click', () => {
+        tr.classList.toggle('aberta');
+      });
 
       tr.querySelector('[data-field="pago"]').addEventListener('change', e => {
         p.pago = e.target.checked;
@@ -2344,6 +2444,14 @@
     tr.querySelector('[data-role="juros"]').textContent = fmtBRL(juros);
     tr.querySelector('[data-role="multa"]').textContent = fmtBRL(multa);
     tr.querySelector('[data-role="total"]').textContent = fmtBRL(total);
+
+    // Mantém o resumo compacto (cartão do celular) atualizado.
+    const rt = tr.querySelector('[data-role="resumo-total"]');
+    if (rt) rt.textContent = fmtBRL(total);
+    const prNome = tr.querySelector('.pr-nome');
+    if (prNome) prNome.textContent = p.nome || '(sem nome)';
+    const prSub = tr.querySelector('.pr-sub');
+    if (prSub) prSub.textContent = resumoSubParcela(p, dias);
   }
 
   function atualizarTotaisIndividual() {
@@ -2531,6 +2639,11 @@
   $('btnVoltar').addEventListener('click', voltarParaLista);
   $('btnExcluirMorador').addEventListener('click', () => { if (moradorAtivoKey) excluirMorador(moradorAtivoKey); });
 
+  // Acordeão dos dados cadastrais (celular): o cabeçalho abre/fecha o formulário.
+  $('fichaCabecalho').addEventListener('click', () => {
+    if (ehCelular()) $('fichaBloco').classList.toggle('aberta');
+  });
+
   document.querySelectorAll('.ficha [data-campo]').forEach(el => {
     const evento = el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(evento, () => {
@@ -2569,6 +2682,11 @@
       nomeAuto: true
     });
     renderIndividual();
+    // No celular, já abre a parcela recém-criada para edição imediata.
+    if (ehCelular()) {
+      const linhas = $('tbodyIndividual').querySelectorAll('tr.parcela');
+      if (linhas.length) linhas[linhas.length - 1].classList.add('aberta');
+    }
     agendarSalvamento();
   });
 
