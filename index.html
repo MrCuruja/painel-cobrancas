@@ -376,6 +376,13 @@
   .ledger.clickable tr.quadra-header { cursor: default; }
   .ledger.clickable tr.quadra-header:hover td { background: var(--bg-main) !important; }
 
+  /* Estrutura do cabeçalho de grupo. No desktop é uma faixa em texto corrido;
+     no celular (media query) vira um cartão clicável de quadra (acordeão). */
+  .grupo-header .chevron { display: none; }
+  .grupo-header .grupo-info { display: inline; }
+  .grupo-header .grupo-nome { font-weight: 700; }
+  .grupo-header .grupo-meta::before { content: " · "; }
+
   /* ---------- BARRA DE ORDENAÇÃO ---------- */
   .toolbar-ordenar {
     display: flex;
@@ -568,7 +575,7 @@
      e o valor à direita. Muito mais legível num telefone.
      =========================================================== */
   @media (max-width: 600px) {
-    body { padding: 16px 12px 92px; }
+    body { padding: 16px 12px 92px; overflow-x: hidden; }
     .wrap { gap: 16px; }
 
     /* A capa da lista perde o texto descritivo longo no celular para
@@ -619,20 +626,22 @@
     /* --------- TABELAS EM MODO CARTÃO --------- */
     .table-container { overflow-x: visible; }
 
-    .ledger, .ledger tbody, .ledger tr, .ledger td { display: block; width: 100%; }
+    .ledger, .ledger tbody, .ledger tr, .ledger td { display: block; }
+    /* Largura automática (em vez de 100%) evita o corte do lado direito:
+       com width:100% + margem lateral o cartão ficava mais largo que a tela. */
+    .ledger tr, .ledger td { width: auto; }
     .ledger thead { display: none; }
 
-    .ledger tbody tr {
+    /* ===== FICHA DE PARCELAS (tabela sem .clickable): cartão rotulado ===== */
+    .ledger:not(.clickable) tbody tr {
       border: 1px solid var(--bg-main);
       border-radius: var(--radius-md);
-      margin: 12px;
+      margin: 12px 10px;
       padding: 6px 4px;
       background: var(--bg-card);
       box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
-    .ledger.clickable tbody tr:hover { background-color: var(--bg-card); }
-
-    .ledger td {
+    .ledger:not(.clickable) td {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -641,22 +650,8 @@
       border-bottom: 1px solid var(--bg-main);
       text-align: right;
     }
-    .ledger tr td:last-child { border-bottom: none; }
-
-    /* Lista de moradores compacta no celular: cada cartão mostra o nome
-       (com unidade/quadra logo abaixo), a adimplência e o total devido.
-       As colunas repetidas ficam ocultas — a ficha individual de parcelas
-       não é afetada, pois usa uma tabela sem a classe .clickable. */
-    .ledger.clickable td.col-unidade,
-    .ledger.clickable td.col-quadra,
-    .ledger.clickable td.col-tipo,
-    .ledger.clickable td.col-dias { display: none; }
-
-    /* Unidade e quadra passam a aparecer como subtítulo do nome. */
-    .sub-unidade { display: block; }
-
-    /* Rótulo da coluna à esquerda de cada valor */
-    .ledger td[data-label]::before {
+    .ledger:not(.clickable) tr td:last-child { border-bottom: none; }
+    .ledger:not(.clickable) td[data-label]::before {
       content: attr(data-label);
       font-size: 11px;
       font-weight: 600;
@@ -668,41 +663,123 @@
       margin-right: auto;
     }
 
-    /* Nome do morador: faixa de destaque no topo do cartão */
-    .celula-nome {
-      position: relative;
-      flex-direction: column;
-      align-items: flex-start !important;
-      justify-content: flex-start !important;
-      text-align: left !important;
-      background: var(--bg-main);
-      border-radius: var(--radius-sm);
-      margin: 2px 6px 4px;
-      padding: 12px 36px 12px 14px !important;
-      border-bottom: none !important;
+    /* ===== LISTA GERAL (tabela .clickable): cartões enxutos ===== */
+    /* Colunas repetidas ficam ocultas; unidade/quadra viram subtítulo do nome. */
+    .ledger.clickable td.col-unidade,
+    .ledger.clickable td.col-quadra,
+    .ledger.clickable td.col-tipo,
+    .ledger.clickable td.col-dias { display: none; }
+    .sub-unidade { display: block; }
+
+    /* Cartão do morador: nome no topo; adimplência e total na 2ª linha. */
+    .ledger.clickable tbody tr.linha-morador {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 10px;
+      row-gap: 4px;
+      margin: 6px 12px;
+      padding: 11px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-main);
+      border-radius: var(--radius-md);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
     }
-    .celula-nome .link-morador { font-size: 16px; }
-    .celula-nome .sub-linha { margin-top: 3px; }
-    /* Seta indicando que o cartão inteiro abre a ficha do morador. */
-    .celula-nome::after {
+    .ledger.clickable tbody tr.linha-morador:hover { background: var(--bg-card); }
+    .ledger.clickable tbody tr.linha-morador.oculto { display: none; }
+
+    .linha-morador .celula-nome {
+      grid-column: 1 / -1;
+      position: relative;
+      display: block;
+      background: transparent;
+      border: none !important;
+      margin: 0;
+      padding: 1px 24px 0 0 !important;
+    }
+    .linha-morador .celula-nome .link-morador { font-size: 15px; font-weight: 600; }
+    .linha-morador .celula-nome .sub-linha { margin-top: 1px; font-size: 11px; }
+    .linha-morador .celula-nome::after {
       content: "›";
       position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 24px;
+      right: 2px;
+      top: 1px;
+      font-size: 20px;
       line-height: 1;
       color: var(--text-muted);
     }
 
-    /* Total devido em destaque dentro do cartão. */
-    .ledger.clickable td.col-num { font-size: 15px; }
-    .ledger.clickable td.col-num.val-total { font-weight: 700; }
+    .linha-morador .col-status {
+      grid-column: 1;
+      justify-self: start;
+      display: block;
+      padding: 0 !important;
+      border: none !important;
+      text-align: left;
+    }
+    .linha-morador .col-num {
+      grid-column: 2;
+      justify-self: end;
+      display: block;
+      padding: 0 !important;
+      border: none !important;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .linha-morador .col-num.val-total { color: var(--danger); }
+    .linha-morador .col-status::before,
+    .linha-morador .col-num::before { content: none !important; }
+    .linha-morador .badge-status { font-size: 11px; }
 
-    /* Cabeçalho de grupo continua como faixa cheia */
-    tr.quadra-header { margin: 12px 12px 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
-    tr.quadra-header td { display: block; text-align: left; padding: 10px 14px; }
-    tr.quadra-header td::before { content: none; }
+    /* ===== CARTÃO DE QUADRA (ACORDEÃO) ===== */
+    /* Cada grupo vira um cartão clicável. A lista de moradores só aparece
+       quando o cartão da quadra é tocado. */
+    tr.grupo-header {
+      display: block;
+      margin: 10px 12px 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    tr.grupo-header td {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      padding: 14px !important;
+      background: var(--bg-card) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-md);
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-main);
+      font-weight: 400;
+    }
+    tr.grupo-header.aberto td {
+      border-color: var(--accent) !important;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .grupo-header td::before { content: none; }
+    .grupo-header .grupo-info { display: flex; flex-direction: column; gap: 2px; }
+    .grupo-header .grupo-nome { font-size: 15px; font-weight: 700; color: var(--text-main); }
+    .grupo-header .grupo-meta { font-size: 12px; color: var(--text-muted); }
+    .grupo-header .grupo-meta::before { content: none; }
+    .grupo-header .chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    .grupo-header.aberto .chevron { transform: rotate(180deg); }
+    /* O primeiro morador de uma quadra aberta encosta no cartão da quadra. */
+    tr.grupo-header.aberto + tr.linha-morador { margin-top: 4px; }
 
     /* Célula de estado vazio ocupa o cartão inteiro, sem rótulo */
     td.vazio { display: block; text-align: center; }
@@ -1634,6 +1711,11 @@
 
   const filtros = { busca: '', quadra: '', tipo: '', status: '', ocupacao: '', agrupar: 'quadra', ordenar: 'unidade' };
 
+  // Quais grupos (quadras) o usuário deixou abertos no celular. Persiste entre
+  // re-renderizações da lista para o acordeão não fechar sozinho ao filtrar.
+  const gruposAbertos = new Set();
+  const ehCelular = () => window.matchMedia('(max-width: 600px)').matches;
+
   /* ==========================================================
      4. MODELO DE DADOS — migração dos cadastros antigos
      ==========================================================
@@ -1873,10 +1955,12 @@
     return '';
   }
 
-  function criarLinhaMorador(item) {
+  function criarLinhaMorador(item, gid, oculto) {
     const { key, m, r, status } = item;
     const st = STATUS[status];
     const tr = document.createElement('tr');
+    tr.className = 'linha-morador' + (oculto ? ' oculto' : '');
+    if (gid) tr.setAttribute('data-grupo', gid);
     const infoUnidade = [
       m.unidade ? 'Unidade ' + esc(m.unidade) : '',
       m.quadra ? 'Quadra ' + esc(m.quadra) : ''
@@ -1899,11 +1983,22 @@
     return tr;
   }
 
-  function criarLinhaGrupo(rotulo, qtd, totalGrupo) {
+  function criarLinhaGrupo(rotulo, qtd, totalGrupo, gid, aberto) {
     const tr = document.createElement('tr');
-    tr.className = 'quadra-header';
-    tr.innerHTML = `<td colspan="8">${esc(rotulo)} · ${qtd} ${qtd === 1 ? 'morador' : 'moradores'}` +
-      (totalGrupo > 0 ? ` · ${fmtBRL(totalGrupo)} em aberto` : '') + `</td>`;
+    tr.className = 'quadra-header grupo-header' + (aberto ? ' aberto' : '');
+    tr.setAttribute('data-grupo', gid);
+    tr.setAttribute('role', 'button');
+    tr.setAttribute('tabindex', '0');
+    tr.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    const meta = `${qtd} ${qtd === 1 ? 'morador' : 'moradores'}` +
+      (totalGrupo > 0 ? ` · ${fmtBRL(totalGrupo)} em aberto` : ' · em dia');
+    tr.innerHTML = `<td colspan="8">` +
+      `<span class="grupo-info">` +
+        `<span class="grupo-nome">${esc(rotulo)}</span>` +
+        `<span class="grupo-meta">${meta}</span>` +
+      `</span>` +
+      `<span class="chevron">▾</span>` +
+    `</td>`;
     return tr;
   }
 
@@ -2007,11 +2102,19 @@
       });
     }
 
-    nomes.forEach(g => {
+    // No celular os grupos começam fechados (lista bem compacta). Abrem quando:
+    // há busca ativa, existe um único grupo, ou o usuário já abriu aquela quadra.
+    const celular = ehCelular();
+    const umGrupo = nomes.length === 1;
+    nomes.forEach((g, idx) => {
       const itens = grupos[g];
       const totalGrupo = itens.reduce((s, i) => s + i.r.total, 0);
-      tbody.appendChild(criarLinhaGrupo(g, itens.length, totalGrupo));
-      itens.forEach(item => tbody.appendChild(criarLinhaMorador(item)));
+      const gid = 'g' + idx;
+      const aberto = !celular || filtros.busca !== '' || umGrupo || gruposAbertos.has(g);
+      const header = criarLinhaGrupo(g, itens.length, totalGrupo, gid, aberto);
+      header.setAttribute('data-nome', g);
+      tbody.appendChild(header);
+      itens.forEach(item => tbody.appendChild(criarLinhaMorador(item, gid, !aberto)));
     });
   }
 
@@ -2380,6 +2483,29 @@
 
   // Botão flutuante do celular: mesmo cadastro do botão principal.
   $('fabCadastro').addEventListener('click', abrirModalCadastro);
+
+  // Acordeão de quadras (celular): tocar no cartão da quadra abre/fecha a lista
+  // de moradores daquela quadra. No desktop a lista fica sempre expandida.
+  function alternarGrupo(header) {
+    const gid = header.getAttribute('data-grupo');
+    const nome = header.getAttribute('data-nome');
+    const abrir = header.getAttribute('aria-expanded') !== 'true';
+    header.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+    header.classList.toggle('aberto', abrir);
+    if (abrir) gruposAbertos.add(nome); else gruposAbertos.delete(nome);
+    $('tbodyGeral').querySelectorAll('tr.linha-morador[data-grupo="' + gid + '"]')
+      .forEach(tr => tr.classList.toggle('oculto', !abrir));
+  }
+  $('tbodyGeral').addEventListener('click', function (e) {
+    if (!ehCelular()) return;
+    const header = e.target.closest('tr.grupo-header');
+    if (header && this.contains(header)) alternarGrupo(header);
+  });
+  $('tbodyGeral').addEventListener('keydown', function (e) {
+    if (!ehCelular() || (e.key !== 'Enter' && e.key !== ' ')) return;
+    const header = e.target.closest('tr.grupo-header');
+    if (header && this.contains(header)) { e.preventDefault(); alternarGrupo(header); }
+  });
 
   // Cadastro
   $('btnAbrirCadastro').addEventListener('click', abrirModalCadastro);
