@@ -1652,6 +1652,7 @@
       <div class="add-row acoes">
         <button class="btn" id="btnAdd">+ Lançar parcela</button>
         <button class="btn" id="btnQuitarTudo">Marcar todas como pagas</button>
+        <button class="btn" id="btnExportarCsvMorador">⬇ Exportar CSV desta unidade</button>
       </div>
     </div>
 
@@ -2622,6 +2623,79 @@
     URL.revokeObjectURL(url);
   }
 
+  // Exporta a ficha completa de UM morador: dados cadastrais, resumo
+  // financeiro e o detalhamento de cada parcela lan\u00E7ada (paga ou em aberto).
+  function exportarCsvMorador(key) {
+    const m = moradores[key];
+    if (!m) return;
+
+    const num = v => (v || 0).toFixed(2).replace('.', ',');
+    const linha = arr => arr
+      .map(c => `"${String(c === undefined || c === null ? '' : c).replace(/"/g, '""')}"`)
+      .join(';');
+
+    const r = resumoMorador(m);
+    const st = STATUS[statusMorador(m, r)];
+
+    const linhas = [];
+    linhas.push(linha(['FICHA DO MORADOR']));
+    linhas.push(linha([]));
+    linhas.push(linha(['DADOS CADASTRAIS']));
+    linhas.push(linha(['Nome', m.nome]));
+    linhas.push(linha(['Unidade', m.unidade]));
+    linhas.push(linha(['Quadra', m.quadra]));
+    linhas.push(linha(['Tipo de resid\u00EAncia', m.tipo]));
+    linhas.push(linha(['Ocupa\u00E7\u00E3o', m.ocupacao]));
+    linhas.push(linha(['Situa\u00E7\u00E3o de cobran\u00E7a', m.situacao]));
+    linhas.push(linha(['Adimpl\u00EAncia', st.label]));
+    linhas.push(linha(['Telefone', m.telefone]));
+    linhas.push(linha(['E-mail', m.email]));
+    linhas.push(linha(['Dia de vencimento do boleto', m.diaVencimento]));
+    linhas.push(linha(['Taxa mensal (R$)', num(m.valorTaxa)]));
+    linhas.push(linha(['Observa\u00E7\u00F5es', (m.observacoes || '').replace(/[\r\n]+/g, ' ')]));
+    linhas.push(linha([]));
+
+    linhas.push(linha(['RESUMO FINANCEIRO']));
+    linhas.push(linha(['Parcelas em aberto', r.abertas]));
+    linhas.push(linha(['Parcelas pagas', r.pagas]));
+    linhas.push(linha(['Dias de atraso (m\u00E1ximo)', r.maxDias]));
+    linhas.push(linha(['Total condom\u00EDnio em aberto (R$)', num(r.condominio)]));
+    linhas.push(linha(['Total juros (R$)', num(r.juros)]));
+    linhas.push(linha(['Total multa (R$)', num(r.multa)]));
+    linhas.push(linha(['Total devido (R$)', num(r.total)]));
+    linhas.push(linha([]));
+
+    linhas.push(linha(['PARCELAS']));
+    linhas.push(linha([
+      'Parcela', 'Pago', 'Pago em', 'Vencimento', 'Data ref.',
+      'Condom\u00EDnio', 'Dias de atraso', 'Juros', 'Multa', 'Total a pagar'
+    ]));
+    if (m.parcelas.length === 0) {
+      linhas.push(linha(['(nenhuma parcela lan\u00E7ada)']));
+    } else {
+      m.parcelas.forEach(p => {
+        const { dias, juros, multa, total } = calcParcela(p);
+        linhas.push(linha([
+          p.nome, p.pago ? 'Sim' : 'N\u00E3o', p.pagoEm ? fmtData(p.pagoEm) : '',
+          fmtData(p.venc), fmtData(p.ref), num(p.valor), dias, num(juros), num(multa), num(total)
+        ]));
+      });
+    }
+
+    const csv = linhas.join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const nomeArquivo = semAcento(`${m.unidade || key}_${m.nome || 'morador'}`)
+      .toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    a.download = `morador_${nomeArquivo}_${todayISO}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   /* ==========================================================
      13. EVENTOS
      ========================================================== */
@@ -2691,6 +2765,7 @@
   // Exportação e data de referência
   $('btnAtualizarRefGeral').addEventListener('click', atualizarReferenciaGeral);
   $('btnExportarCsv').addEventListener('click', exportarCsv);
+  $('btnExportarCsvMorador').addEventListener('click', () => { if (moradorAtivoKey) exportarCsvMorador(moradorAtivoKey); });
 
   // Fecha a janela de cadastro ao clicar fora ou apertar Esc
   $('modalCadastro').addEventListener('click', e => {
