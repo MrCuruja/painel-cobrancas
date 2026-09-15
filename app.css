@@ -1,0 +1,1328 @@
+
+  :root {
+    --bg-main: #f5f5f7;
+    --bg-card: #ffffff;
+    --text-main: #1d1d1f;
+    --text-muted: #86868b;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --danger: #ff453a;
+    --danger-bg: #ff453a15;
+    --success: #34c759;
+    --success-bg: #34c75915;
+    --warning: #ff9f0a;
+    --warning-bg: #ff9f0a1a;
+    --critical: #d70015;
+    --border: #d2d2d7;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* UTILS */
+  .hidden { display: none !important; }
+  
+  /* BOTÃO VOLTAR */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: color 0.2s;
+  }
+  .btn-back:hover { color: var(--accent-hover); }
+
+  .view-individual-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* BOTÃO EXCLUIR MORADOR */
+  .btn-excluir-morador {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-excluir-morador:hover { background: var(--danger); color: #fff; }
+
+  /* Zona isolada da ação destrutiva, no fim da ficha. */
+  .zona-perigo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--danger-bg);
+    border: 1px solid #ffd3cf;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-top: 4px;
+  }
+  .zona-perigo-texto {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* ---------- HEADER / CAPA ---------- */
+  .cover {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .cover-info { flex: 1; }
+
+  /* Logo Monte Verde (tile com fundo branco) */
+  .app-logo {
+    display: block;
+    background: #fff;
+    border-radius: 22%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    object-fit: contain;
+  }
+  .login-logo { width: 104px; height: 104px; margin: 0 auto 6px; }
+  .cover-logo { width: 88px; height: 88px; flex-shrink: 0; }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  h1.title {
+    color: var(--text-main);
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h1.title input {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    width: 100%;
+    outline: none;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.4;
+    max-width: 600px;
+  }
+
+  .stamp {
+    background: var(--bg-main);
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .stamp .n {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+  }
+
+  .stamp .l {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+    line-height: 1.2;
+  }
+
+  /* ---------- BENTO GRID PARAMETERS ---------- */
+  .assumptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .assumption {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .assumption label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .assumption .row {
+    display: flex;
+    align-items: center;
+    background: var(--bg-main);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .assumption input {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-main);
+    background: transparent;
+    border: none;
+    width: 100%;
+    outline: none;
+  }
+
+  .assumption .unit {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  .assumption button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--text-main);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    width: 100%;
+  }
+
+  .assumption button:hover { background: #333; }
+
+  /* ---------- TABELAS ---------- */
+  .book {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+
+  .table-container { overflow-x: auto; }
+
+  .ledger {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .ledger th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--bg-main);
+    background: var(--bg-card);
+  }
+
+  .ledger td {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--bg-main);
+    vertical-align: middle;
+  }
+
+  .ledger.clickable tbody tr { cursor: pointer; transition: background 0.15s; }
+  .ledger.clickable tbody tr:hover { background-color: #f5f5f7; }
+  .ledger:not(.clickable) tbody tr:hover { background-color: #fafafa; }
+
+  /* Inputs das tabelas */
+  .ledger input[type=text], 
+  .ledger input[type=number], 
+  .ledger input[type=date] {
+    width: 100%;
+    background: var(--bg-main);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 6px 8px;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+
+  .ledger input:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .ledger input[type=number] { text-align: right; }
+
+  /* Alinhamentos */
+  .col-parcela { width: 12%; }
+  .col-date { width: 14%; }
+  .col-num { text-align: right; }
+  .col-dias { text-align: center; width: 10%; }
+
+  .link-morador {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* ---------- QUADRA (badge + coluna) ---------- */
+  .col-quadra { width: 9%; text-align: center; }
+
+  .badge-quadra {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--bg-main);
+    color: var(--text-main);
+    letter-spacing: 0.02em;
+  }
+
+  /* Linha de cabeçalho de grupo (quando a lista está agrupada por quadra) */
+  tr.quadra-header td {
+    background: var(--bg-main) !important;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    cursor: default;
+  }
+  .ledger.clickable tr.quadra-header { cursor: default; }
+  .ledger.clickable tr.quadra-header:hover td { background: var(--bg-main) !important; }
+
+  /* Estrutura do cabeçalho de grupo. No desktop é uma faixa em texto corrido;
+     no celular (media query) vira um cartão clicável de quadra (acordeão). */
+  .grupo-header .chevron { display: none; }
+  .grupo-header .grupo-info { display: inline; }
+  .grupo-header .grupo-nome { font-weight: 700; }
+  .grupo-header .grupo-meta::before { content: " · "; }
+
+  /* ---------- BARRA DE ORDENAÇÃO ---------- */
+  .toolbar-ordenar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--bg-main);
+    flex-wrap: wrap;
+  }
+  .toolbar-ordenar label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .toolbar-ordenar select {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .toolbar-ordenar select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .badge-dias {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-dias.atraso { background: var(--danger-bg); color: var(--danger); }
+  .badge-dias.ok { background: var(--success-bg); color: var(--success); }
+
+  .val-red { color: var(--danger); font-weight: 500; }
+  .val-total { font-weight: 600; color: var(--text-main); }
+
+  .rm-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+    width: 28px;
+    height: 28px;
+  }
+  .rm-btn:hover { background: var(--danger-bg); color: var(--danger); }
+  .rm-txt { display: none; }  /* rótulo textual só aparece no modo cartão (celular) */
+
+  .add-row {
+    padding: 16px;
+    background: #fafafa;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .add-row button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-row button:hover { border-color: var(--text-main); background: #fff; }
+
+  /* ---------- CADASTRO DE NOVO MORADOR ---------- */
+  .add-row.add-morador {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .add-row.add-morador input {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    background: var(--bg-main);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+
+  .add-row.add-morador input:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+
+  .add-row.add-morador input#novoMoradorNome { flex: 2; min-width: 180px; }
+  .add-row.add-morador input#novoMoradorQuadra { flex: 0 0 110px; min-width: 90px; text-transform: uppercase; }
+  .add-row.add-morador input#novoMoradorUnidade { flex: 1; min-width: 120px; }
+
+  .add-row.add-morador button {
+    background: var(--text-main);
+    color: #fff;
+    border-color: var(--text-main);
+  }
+  .add-row.add-morador button:hover { background: #333; }
+
+  /* ---------- TOTALIZADORES ---------- */
+  .stub {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+
+  .stub .item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stub .item .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+
+  .stub .item .value {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .stub .item.total .value { color: var(--accent); font-size: 32px; }
+
+  .stub .paid-count {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--bg-main);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  footer.note {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 16px;
+    margin-top: 10px;
+  }
+
+  /* Componentes que só aparecem no celular (retrato). No desktop ficam ocultos. */
+  .filtros-toggle { display: none; }
+  .filtros-badge  { display: none; }
+  .fab-cadastro   { display: none; }
+  .sub-unidade    { display: none; }
+
+  @media (max-width: 850px) {
+    .assumptions { grid-template-columns: 1fr; }
+    .stub { grid-template-columns: 1fr; gap: 16px; }
+    .cover { flex-direction: column; text-align: center; align-items: center; }
+    .stamp { margin-top: 12px; }
+  }
+
+  /* ===========================================================
+     RESPONSIVO — CELULAR (retrato)
+     As duas tabelas deixam de rolar na horizontal e viram uma
+     pilha de "cartões": cada linha ocupa a largura toda e cada
+     célula mostra o rótulo da coluna (via data-label) à esquerda
+     e o valor à direita. Muito mais legível num telefone.
+     =========================================================== */
+  @media (max-width: 600px) {
+    body { padding: 16px 12px 92px; overflow-x: hidden; }
+    .wrap { gap: 16px; }
+
+    /* A capa da lista perde o texto descritivo longo no celular para
+       encurtar a rolagem até a lista de moradores. */
+    #viewGeral .cover-desc { display: none; }
+    #viewGeral .cover { padding: 18px 16px; }
+
+    .cover { padding: 22px 18px; }
+    h1.title { font-size: clamp(20px, 6vw, 26px); }
+    .subtitle { font-size: 13px; }
+    .stamp { width: 92px; height: 92px; }
+    .stamp .n { font-size: 26px; }
+
+    /* Painel de indicadores: faixa horizontal deslizável (economiza altura).
+       Um "espião" do próximo cartão sinaliza que dá para arrastar de lado. */
+    .dash {
+      display: flex;
+      grid-template-columns: none;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -12px;
+      padding: 0 12px 4px;
+      scrollbar-width: none;
+    }
+    .dash::-webkit-scrollbar { display: none; }
+    .kpi {
+      scroll-snap-align: start;
+      flex: 0 0 46%;
+      min-width: 148px;
+      padding: 14px 15px;
+    }
+    .kpi .k-value { font-size: 20px; }
+
+    /* Filtros: 1 por linha, mais alvo de toque */
+    .filtros { grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+    .filtro.filtro-busca { grid-column: 1 / -1; }
+    .filtros-rodape { padding: 12px 14px; }
+
+    /* Barra de ações: botões ocupam a largura toda */
+    .add-row.acoes { flex-direction: column; align-items: stretch; }
+    .add-row.acoes .btn { width: 100%; text-align: center; }
+    .aviso-ref { text-align: center; margin-top: 4px; }
+
+    #statusBar { padding: 0 2px; }
+
+    /* --------- TABELAS EM MODO CARTÃO --------- */
+    .table-container { overflow-x: visible; }
+
+    .ledger, .ledger tbody, .ledger tr, .ledger td { display: block; }
+    /* Largura automática (em vez de 100%) evita o corte do lado direito:
+       com width:100% + margem lateral o cartão ficava mais largo que a tela. */
+    .ledger tr, .ledger td { width: auto; }
+    .ledger thead { display: none; }
+
+    /* ===== FICHA DE PARCELAS (tabela sem .clickable): cartão rotulado ===== */
+    .ledger:not(.clickable) tbody tr {
+      border: 1px solid var(--bg-main);
+      border-radius: var(--radius-md);
+      margin: 12px 10px;
+      padding: 6px 4px;
+      background: var(--bg-card);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .ledger:not(.clickable) td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--bg-main);
+      text-align: right;
+    }
+    .ledger:not(.clickable) tr td:last-child { border-bottom: none; }
+    .ledger:not(.clickable) td[data-label]::before {
+      content: attr(data-label);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      text-align: left;
+      flex: 0 0 auto;
+      margin-right: auto;
+    }
+
+    /* ===== LISTA GERAL (tabela .clickable): cartões enxutos ===== */
+    /* Colunas repetidas ficam ocultas; unidade/quadra viram subtítulo do nome. */
+    .ledger.clickable td.col-unidade,
+    .ledger.clickable td.col-quadra,
+    .ledger.clickable td.col-tipo,
+    .ledger.clickable td.col-dias { display: none; }
+    .sub-unidade { display: block; }
+
+    /* Cartão do morador: nome no topo; adimplência e total na 2ª linha. */
+    .ledger.clickable tbody tr.linha-morador {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 10px;
+      row-gap: 4px;
+      margin: 6px 12px;
+      padding: 11px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-main);
+      border-radius: var(--radius-md);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+    }
+    .ledger.clickable tbody tr.linha-morador:hover { background: var(--bg-card); }
+    .ledger.clickable tbody tr.linha-morador.oculto { display: none; }
+
+    .linha-morador .celula-nome {
+      grid-column: 1 / -1;
+      position: relative;
+      display: block;
+      background: transparent;
+      border: none !important;
+      margin: 0;
+      padding: 1px 24px 0 0 !important;
+    }
+    .linha-morador .celula-nome .link-morador { font-size: 15px; font-weight: 600; }
+    .linha-morador .celula-nome .sub-linha { margin-top: 1px; font-size: 11px; }
+    .linha-morador .celula-nome::after {
+      content: "›";
+      position: absolute;
+      right: 2px;
+      top: 1px;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--text-muted);
+    }
+
+    .linha-morador .col-status {
+      grid-column: 1;
+      justify-self: start;
+      display: block;
+      padding: 0 !important;
+      border: none !important;
+      text-align: left;
+    }
+    .linha-morador .col-num {
+      grid-column: 2;
+      justify-self: end;
+      display: block;
+      padding: 0 !important;
+      border: none !important;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .linha-morador .col-num.val-total { color: var(--danger); }
+    .linha-morador .col-status::before,
+    .linha-morador .col-num::before { content: none !important; }
+    .linha-morador .badge-status { font-size: 11px; }
+
+    /* ===== CARTÃO DE QUADRA (ACORDEÃO) ===== */
+    /* Cada grupo vira um cartão clicável. A lista de moradores só aparece
+       quando o cartão da quadra é tocado. */
+    tr.grupo-header {
+      display: block;
+      margin: 10px 12px 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    tr.grupo-header td {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      padding: 14px !important;
+      background: var(--bg-card) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-md);
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text-main);
+      font-weight: 400;
+    }
+    tr.grupo-header.aberto td {
+      border-color: var(--accent) !important;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .grupo-header td::before { content: none; }
+    .grupo-header .grupo-info { display: flex; flex-direction: column; gap: 2px; }
+    .grupo-header .grupo-nome { font-size: 15px; font-weight: 700; color: var(--text-main); }
+    .grupo-header .grupo-meta { font-size: 12px; color: var(--text-muted); }
+    .grupo-header .grupo-meta::before { content: none; }
+    .grupo-header .chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    .grupo-header.aberto .chevron { transform: rotate(180deg); }
+    /* O primeiro morador de uma quadra aberta encosta no cartão da quadra. */
+    tr.grupo-header.aberto + tr.linha-morador { margin-top: 4px; }
+
+    /* Célula de estado vazio ocupa o cartão inteiro, sem rótulo */
+    .ledger td.vazio { display: block; text-align: center; }
+    td.vazio::before { content: none; }
+
+    /* Inputs da ficha de parcelas: largura confortável no cartão */
+    .ledger td .chk-pago { width: 22px; height: 22px; }
+    .ledger input[type=text], .ledger input[type=number], .ledger input[type=date] {
+      max-width: 62%;
+      font-size: 15px;   /* >=16px evita o zoom automático do iOS ao focar */
+      padding: 8px 10px;
+    }
+    .ledger input[type=number] { max-width: 50%; }
+
+    /* Botão remover parcela: vira ação clara em vez de um "x" */
+    .col-remover { justify-content: center !important; }
+    .col-remover .rm-btn {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      background: transparent;
+      border-radius: var(--radius-sm);
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .col-remover .rm-btn:hover { background: var(--danger); color: #fff; }
+    .col-remover .rm-txt { display: inline; margin-left: 4px; }
+
+    /* --------- FICHA: DADOS CADASTRAIS EM ACORDEÃO --------- */
+    /* Os campos de cadastro ficam recolhidos; o cabeçalho abre/fecha. */
+    .ficha-cabecalho { cursor: pointer; }
+    .ficha .form-grid { display: none; }
+    .ficha.aberta .form-grid { display: grid; margin-top: 16px; }
+    .ficha-chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .ficha.aberta .ficha-chevron { transform: rotate(180deg); }
+
+    /* --------- PARÂMETROS DE CÁLCULO EM ACORDEÃO --------- */
+    .assumptions-cabecalho {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    .assumptions-titulo { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .assumptions-cabecalho .param-chevron {
+      display: inline-block;
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    .assumptions-bloco.aberta .param-chevron { transform: rotate(180deg); }
+    .assumptions { display: none; }
+    .assumptions-bloco.aberta .assumptions { display: grid; margin-top: 12px; }
+
+    /* --------- PARCELAS: CARTÃO COMPACTO EM ACORDEÃO --------- */
+    /* Cada parcela mostra só o resumo (nome, vencimento, situação e total).
+       Os campos editáveis aparecem ao tocar no cartão. */
+    .ledger:not(.clickable) tbody tr.parcela { padding: 0; }
+
+    .ledger:not(.clickable) td.parcela-resumo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: none;
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,113,231,0.08);
+    }
+    .parcela-resumo .pr-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      margin-right: auto;
+    }
+    .parcela-resumo .pr-nome {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .parcela-resumo .pr-sub { font-size: 11px; color: var(--text-muted); }
+    .parcela-resumo .pr-valor {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    .parcela-resumo .chevron {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+      flex: 0 0 auto;
+    }
+    tr.parcela.aberta .parcela-resumo .chevron { transform: rotate(180deg); }
+    tr.parcela.parcela-paga .parcela-resumo .pr-nome { color: var(--text-muted); }
+    tr.parcela.parcela-paga .parcela-resumo .pr-valor {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    /* Detalhes (campos editáveis) escondidos até o cartão abrir. */
+    .ledger:not(.clickable) tr.parcela td:not(.parcela-resumo) { display: none; }
+    .ledger:not(.clickable) tr.parcela.aberta td:not(.parcela-resumo) { display: flex; }
+    tr.parcela.aberta .parcela-resumo { border-bottom: 1px solid var(--bg-main); }
+
+    /* Cabeçalho da ficha individual */
+    .view-individual-header { flex-direction: column; align-items: stretch; gap: 10px; }
+    .zona-perigo { flex-direction: column; align-items: stretch; text-align: center; padding: 16px; }
+    .zona-perigo .btn-excluir-morador { width: 100%; text-align: center; }
+    .ficha { padding: 20px 16px; }
+
+    /* Janela de cadastro */
+    .modal-overlay { padding: 16px 10px; }
+    .modal { padding: 22px 18px; }
+    .modal-acoes { flex-direction: column-reverse; }
+    .modal-acoes .btn { width: 100%; text-align: center; }
+
+    /* --------- FILTROS RECOLHÍVEIS ---------
+       No celular só a busca fica visível. Os demais filtros e a ordenação
+       ficam escondidos atrás de um botão, para que a lista de moradores
+       apareça logo abaixo da busca sem uma rolagem longa. */
+    .filtros .filtro:not(.filtro-busca) { display: none; }
+    .book.mostra-filtros .filtros .filtro { display: flex; }
+
+    .filtros-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      grid-column: 1 / -1;
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+    .filtros-toggle .filtros-toggle-rot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filtros-toggle .chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+    .book.mostra-filtros .filtros-toggle .chevron { transform: rotate(180deg); }
+
+    .filtros-badge {
+      display: none;
+      min-width: 20px;
+      height: 20px;
+      line-height: 20px;
+      padding: 0 6px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .filtros-badge.tem { display: inline-block; }
+
+    /* --------- BOTÃO FLUTUANTE: CADASTRAR MORADOR --------- */
+    .fab-cadastro {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 56px;
+      height: 56px;
+      padding-bottom: 3px;
+      border: none;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 30px;
+      line-height: 1;
+      box-shadow: 0 6px 20px rgba(0, 113, 231, 0.4);
+      cursor: pointer;
+      z-index: 500;
+      transition: transform 0.12s ease, background 0.2s ease;
+    }
+    .fab-cadastro:active { transform: scale(0.93); }
+  }
+
+  @media (max-width: 400px) {
+    .dash { grid-template-columns: 1fr; }
+    .filtros { grid-template-columns: 1fr; }
+    .filtro.filtro-busca { grid-column: auto; }
+    h1.title { font-size: 20px; }
+  }
+
+  /* Alvos de toque um pouco maiores em telas sensíveis ao toque */
+  @media (hover: none) and (pointer: coarse) {
+    .btn, .filtro select, .filtro input, .campo input, .campo select { min-height: 44px; }
+    .ledger.clickable tbody tr { -webkit-tap-highlight-color: rgba(0,113,231,0.08); }
+  }
+
+  /* ---------- LOGIN / STATUS DE SINCRONIZAÇÃO ---------- */
+  #loginOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  #loginBox {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #loginBox h2 { font-size: 18px; margin-bottom: 4px; }
+  #loginBox input {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    outline: none;
+    background: var(--bg-main);
+    color: var(--text-main);
+  }
+  #loginBox button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  #loginBox button:hover { background: var(--accent-hover); }
+  #loginErro { color: var(--danger); font-size: 13px; min-height: 16px; }
+
+  #statusBar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  #statusBar #btnLogout {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  #statusBar #btnLogout:hover { background: var(--bg-card); }
+  #syncIndicator.saving { color: var(--accent); }
+  #syncIndicator.erro { color: var(--danger); }
+  #syncIndicator.ok { color: var(--success); }
+  /* ==========================================================
+     INCREMENTO — CADASTRO COMPLETO, CLASSIFICAÇÃO E FILTROS
+     ========================================================== */
+
+  /* ---------- PAINEL DE INDICADORES ---------- */
+  .dash {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+    gap: 16px;
+  }
+  .kpi {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 3px solid var(--border);
+  }
+  .kpi .k-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  .kpi .k-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .kpi .k-sub { font-size: 11px; color: var(--text-muted); }
+  .kpi.ok    { border-left-color: var(--success); }
+  .kpi.warn  { border-left-color: var(--warning); }
+  .kpi.bad   { border-left-color: var(--danger); }
+  .kpi.info  { border-left-color: var(--accent); }
+  .kpi.ok .k-value   { color: #248a3d; }
+  .kpi.warn .k-value { color: #a86500; }
+  .kpi.bad .k-value  { color: var(--danger); }
+  .kpi.info .k-value { color: var(--accent); }
+
+  /* ---------- ETIQUETAS DE CLASSIFICAÇÃO ---------- */
+  .badge-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .st-adimplente   { background: var(--success-bg); color: #248a3d; }
+  .st-atraso       { background: var(--warning-bg); color: #a86500; }
+  .st-inadimplente { background: var(--danger-bg);  color: var(--danger); }
+  .st-critico      { background: #d7001518;         color: #a3000f; }
+  .st-acordo       { background: #0071e318;         color: var(--accent); }
+  .st-juridico     { background: #af52de18;         color: #8236a8; }
+  .st-isento       { background: var(--bg-main);    color: var(--text-muted); }
+
+  .badge-tipo {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bg-main);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .col-unidade { width: 9%; font-weight: 600; }
+  .col-tipo    { width: 11%; }
+  .col-status  { width: 12%; }
+  .sub-linha   { display: block; font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ---------- BARRA DE FILTROS ---------- */
+  .filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(152px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--bg-main);
+  }
+  .filtro { display: flex; flex-direction: column; gap: 5px; }
+  .filtro label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+  .filtro select, .filtro input {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-main);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    outline: none;
+    width: 100%;
+    transition: all 0.15s ease;
+  }
+  .filtro select:focus, .filtro input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+  .filtros-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--bg-main);
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  /* ---------- BOTÕES ---------- */
+  .btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--text-main); background: #fff; }
+  .btn-primario {
+    background: var(--text-main);
+    border-color: var(--text-main);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-primario:hover { background: #333; border-color: #333; }
+  .btn-perigo { border-color: var(--danger); color: var(--danger); }
+  .btn-perigo:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .add-row.acoes { gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .aviso-ref {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .aviso-ref.pendente { color: #a86500; font-weight: 600; }
+
+  /* ---------- JANELA (MODAL) ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 900;
+    padding: 32px 20px;
+    overflow-y: auto;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  .modal {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+    width: 100%;
+    max-width: 640px;
+    padding: 28px;
+    margin: auto;
+  }
+  .modal h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+  .modal .modal-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.45; }
+  .modal-acoes { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  /* ---------- FORMULÁRIO DE CADASTRO ---------- */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 20px 0 24px;
+  }
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo.wide { grid-column: 1 / -1; }
+  .campo label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+  .campo input, .campo select, .campo textarea {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    background: var(--bg-main);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    outline: none;
+    width: 100%;
+    transition: all 0.15s ease;
+  }
+  .campo textarea { resize: vertical; min-height: 62px; line-height: 1.45; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(0, 113, 231, 0.1);
+  }
+  .campo .dica { font-size: 11px; color: var(--text-muted); }
+
+  /* ---------- FICHA CADASTRAL (VISÃO INDIVIDUAL) ---------- */
+  .ficha {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    padding: 28px 32px;
+  }
+  .ficha .ficha-titulo {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .ficha .form-grid { grid-template-columns: repeat(3, 1fr); margin-bottom: 0; }
+  .ficha-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ficha-cab-dir { display: inline-flex; align-items: center; gap: 10px; }
+  /* Estes elementos são exclusivos do celular. Escondê-los apenas no desktop
+     (min-width) evita conflito de ordem com as regras da media query de celular
+     — declarar display:none na base, depois da media query, apagava os cartões
+     de acordeão no telefone. */
+  @media (min-width: 601px) {
+    .ficha-chevron,
+    .parcela-resumo,
+    .assumptions-cabecalho { display: none; }
+  }
+
+  /* ---------- PARCELAS QUITADAS ---------- */
+  .col-pago { width: 56px; text-align: center; }
+  tr.parcela-paga td { background: #fbfdfb; }
+  tr.parcela-paga input[type=text],
+  tr.parcela-paga input[type=number],
+  tr.parcela-paga input[type=date] { opacity: 0.55; }
+  tr.parcela-paga .val-red { color: var(--text-muted); text-decoration: line-through; }
+  tr.parcela-paga .val-total { color: var(--text-muted); text-decoration: line-through; }
+  .chk-pago { width: 17px; height: 17px; cursor: pointer; accent-color: var(--success); }
+
+  .vazio {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 850px) {
+    .ficha .form-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .ficha { padding: 24px 20px; }
+  }
+
