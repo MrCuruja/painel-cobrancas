@@ -660,6 +660,7 @@
       carregarDados();
     } else {
       pararSincronizacao();
+      if ($('pdfDialog').open) $('pdfDialog').close();
       moradores = {}; moradorAtivoKey = null;
       $('tbodyGeral').replaceChildren(); $('tbodyIndividual').replaceChildren();
       $('viewGeral').classList.remove('hidden'); $('viewIndividual').classList.add('hidden');
@@ -1599,4 +1600,165 @@
 
 
   // A lista geral é renderizada após o login, em carregarDados().
+  /* PDF individual: os dados são preparados em memória e nunca enviados
+     a um serviço de geração. Bibliotecas locais só carregam sob demanda. */
+  const scriptsPdf = new Map();
+  let pdfArquivo = null;
+  let pdfGeracao = 0;
+  let pdfFocoAnterior = null;
+
+  function carregarScriptPdf(caminho) {
+    if (scriptsPdf.has(caminho)) return scriptsPdf.get(caminho);
+    const promessa = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      let terminou = false;
+      const concluir = erro => {
+        if (terminou) return;
+        terminou = true;
+        clearTimeout(limite);
+        if (erro) { script.remove(); scriptsPdf.delete(caminho); reject(erro); }
+        else resolve();
+      };
+      const limite = setTimeout(() => concluir(new Error('Não foi possível carregar o gerador. Confira sua conexão e tente novamente.')), 15000);
+      script.src = new URL(caminho, document.baseURI).href;
+      script.onload = () => concluir();
+      script.onerror = () => concluir(new Error('Não foi possível carregar o gerador. Confira se todos os arquivos do app foram publicados.'));
+      document.head.appendChild(script);
+    });
+    scriptsPdf.set(caminho, promessa);
+    return promessa;
+  }
+
+  function montarRelatorioMorador(key) {
+    const m = moradores[key];
+    if (!m) throw new Error('Selecione um morador para gerar o PDF.');
+    if (!String(m.nome || '').trim() || !String(m.unidade || '').trim()) {
+      throw new Error('Preencha o nome e a unidade do morador antes de gerar o PDF.');
+    }
+    const abertas = m.parcelas.filter(p => !p.pago);
+    if (abertas.some(p => !dataValida(p.venc) || !dataValida(p.ref) || !Number.isFinite(p.valor) || p.valor < 0)) {
+      throw new Error('Revise os vencimentos, as datas de referência e os valores das parcelas em aberto antes de gerar o PDF.');
+    }
+    if (['taxaJuros', 'taxaMulta'].some(id => !$(id).checkValidity())) {
+      throw new Error('Corrija as taxas de juros e multa antes de gerar o PDF.');
+    }
+    // Copiar somente os campos necessários impede incluir notas internas,
+    // dados de contato, histórico pago ou outras fichas no documento.
+    const parcelas = abertas.map(p => {
+      const c = calcParcela(p);
+      if ([c.juros, c.multa, c.total].some(v => !Number.isFinite(v) || v < 0)) {
+        throw new Error('Uma parcela contém um valor fora do intervalo permitido. Revise os valores antes de gerar o PDF.');
+      }
+      return { nome: String(p.nome || 'Parcela sem nome'), venc: p.venc, ref: p.ref, valor: p.valor,
+        juros: c.juros, multa: c.multa, total: c.total, dias: c.dias };
+    }).sort((a, b) => a.venc.localeCompare(b.venc) || a.nome.localeCompare(b.nome, 'pt-BR'));
+    const resumo = resumoMorador(m);
+    if (['condominio', 'juros', 'multa', 'total'].some(k => !Number.isFinite(resumo[k]))) {
+      throw new Error('O total ultrapassa o intervalo permitido. Revise as parcelas antes de gerar o PDF.');
+    }
+    return {
+      nome: m.nome, unidade: m.unidade, quadra: m.quadra || '',
+      emitidoEm: new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date()),
+      taxas: { juros: taxasAtivas.taxaJuros, multa: taxasAtivas.taxaMulta }, parcelas,
+      totais: { condominio: resumo.condominio, juros: resumo.juros, multa: resumo.multa, total: resumo.total },
+      sincronizado: !!(syncPronto && !syncErro && !syncPromessa && !temAlteracoesSync() && !syncRemotoPendente && syncConectado && navigator.onLine)
+    };
+  }
+
+  function nomeArquivoPdf(relatorio) {
+    const parte = semAcento(`${relatorio.unidade}_${relatorio.nome}`).replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '').slice(0, 90) || 'morador';
+    return `Monte_Verde_Debitos_${parte}_${hojeISO()}.pdf`;
+  }
+
+  async function gerarPdfMorador() {
+    if (!moradorAtivoKey) return;
+    const geracao = ++pdfGeracao;
+    pdfArquivo = null;
+    pdfFocoAnterior = document.activeElement;
+    $('pdfError').textContent = '';
+    $('pdfMeta').textContent = '';
+    $('pdfMessage').textContent = 'Preparando o documento…';
+    $('btnBaixarPdf').disabled = true;
+    $('btnCompartilharPdf').disabled = true;
+    $('btnCompartilharPdf').classList.add('hidden');
+    $('btnGerarPdfMorador').disabled = true;
+    const dialog = $('pdfDialog');
+    if (!dialog.open) dialog.showModal();
+    dialog.setAttribute('aria-busy', 'true');
+    try {
+      const relatorio = montarRelatorioMorador(moradorAtivoKey);
+      $('pdfMeta').textContent = `${relatorio.nome} · Unidade ${relatorio.unidade}`;
+      await carregarScriptPdf('vendor/pdf-lib-1.17.1.min.js');
+      await carregarScriptPdf('pdf-report.js');
+      if (geracao !== pdfGeracao || !dialog.open) return;
+      // Falha no ícone não impede gerar o demonstrativo.
+      let logoBytes;
+      try {
+        const resposta = await fetch(new URL('icon-192.png', document.baseURI), { signal: AbortSignal.timeout(5000) });
+        if (resposta.ok) logoBytes = new Uint8Array(await resposta.arrayBuffer());
+      } catch (_) { /* O cabeçalho textual continua identificando o condomínio. */ }
+      const bytes = await window.MonteVerdePDF.generate(relatorio, { logoBytes });
+      if (geracao !== pdfGeracao || !dialog.open) return;
+      pdfArquivo = new File([bytes], nomeArquivoPdf(relatorio), { type: 'application/pdf' });
+      $('pdfMessage').textContent = relatorio.parcelas.length
+        ? `${relatorio.parcelas.length} ${relatorio.parcelas.length === 1 ? 'parcela em aberto' : 'parcelas em aberto'} · Total ${fmtBRL(relatorio.totais.total)}. O PDF está pronto para baixar.`
+        : 'Nenhuma parcela em aberto. O PDF está pronto com essa informação.';
+      $('pdfMeta').textContent = `${relatorio.nome} · Unidade ${relatorio.unidade}` +
+        (relatorio.sincronizado ? '' : ' · Inclui dados ainda não confirmados na nuvem.');
+      $('btnBaixarPdf').disabled = false;
+      let compartilhavel = false;
+      try { compartilhavel = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [pdfArquivo] })); } catch (_) {}
+      $('btnCompartilharPdf').classList.toggle('hidden', !compartilhavel);
+      $('btnCompartilharPdf').disabled = !compartilhavel;
+    } catch (erro) {
+      if (geracao !== pdfGeracao || !dialog.open) return;
+      $('pdfMessage').textContent = 'O PDF não foi gerado.';
+      $('pdfError').textContent = erro.message || 'Não foi possível gerar o PDF. Feche esta janela e tente novamente.';
+    } finally {
+      if (geracao === pdfGeracao) {
+        $('btnGerarPdfMorador').disabled = false;
+        dialog.setAttribute('aria-busy', 'false');
+      }
+    }
+  }
+
+  function baixarPdfMorador() {
+    if (!pdfArquivo) return;
+    const url = URL.createObjectURL(pdfArquivo);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = pdfArquivo.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    $('pdfMessage').textContent = 'Download solicitado. Se o navegador abrir o PDF, use Compartilhar para salvar em Arquivos ou enviá-lo.';
+  }
+
+  async function compartilharPdfMorador() {
+    if (!pdfArquivo || !navigator.share) return;
+    $('pdfError').textContent = '';
+    $('btnCompartilharPdf').disabled = true;
+    try {
+      // Executado diretamente pelo toque no botão, preservando o gesto exigido pelo iOS.
+      await navigator.share({ files: [pdfArquivo], title: 'Demonstrativo de débitos - Monte Verde' });
+    } catch (erro) {
+      if (erro.name !== 'AbortError') $('pdfError').textContent = 'Não foi possível compartilhar. Use Baixar PDF e envie o arquivo pelo aplicativo de sua preferência.';
+    } finally {
+      if (pdfArquivo) $('btnCompartilharPdf').disabled = false;
+    }
+  }
+
+  $('btnGerarPdfMorador').addEventListener('click', gerarPdfMorador);
+  $('btnBaixarPdf').addEventListener('click', baixarPdfMorador);
+  $('btnCompartilharPdf').addEventListener('click', compartilharPdfMorador);
+  $('btnFecharPdf').addEventListener('click', () => $('pdfDialog').close());
+  $('pdfDialog').addEventListener('close', () => {
+    pdfGeracao++;
+    pdfArquivo = null;
+    $('btnGerarPdfMorador').disabled = false;
+    $('pdfDialog').setAttribute('aria-busy', 'false');
+    if (pdfFocoAnterior?.isConnected) pdfFocoAnterior.focus({ preventScroll: true });
+  });
+
 })();

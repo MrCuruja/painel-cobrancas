@@ -6,18 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Monte Verde">
-<meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111815" media="(prefers-color-scheme: dark)">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f2f3f5">
+<meta name="color-scheme" content="only light">
 <meta name="description" content="Cadastro de moradores e acompanhamento das cobranças do Monte Verde Residencial.">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 
 <!-- Firebase (banco de dados na nuvem + login) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="ios.css">
@@ -322,6 +318,7 @@
       <div class="add-row acoes">
         <button class="btn" id="btnAdd">+ Lançar parcela</button>
         <button class="btn" id="btnQuitarTudo">Marcar todas como pagas</button>
+        <button type="button" class="btn btn-primario" id="btnGerarPdfMorador">Gerar PDF de débitos</button>
         <button class="btn" id="btnExportarCsvMorador">⬇ Exportar CSV desta unidade</button>
       </div>
     </div>
@@ -414,6 +411,21 @@
     </div>
   </div>
 </div>
+
+<dialog id="pdfDialog" aria-labelledby="pdfTitle" aria-describedby="pdfMessage">
+  <div class="pdf-dialog-inner">
+    <div class="eyebrow">Monte Verde Residencial</div>
+    <h2 id="pdfTitle">PDF de débitos</h2>
+    <p id="pdfMessage" role="status" aria-live="polite">Preparando o documento…</p>
+    <p class="pdf-meta" id="pdfMeta"></p>
+    <p id="pdfError" role="alert"></p>
+    <div class="pdf-dialog-actions">
+      <button type="button" class="btn btn-primario" id="btnBaixarPdf" disabled>Baixar PDF</button>
+      <button type="button" class="btn hidden" id="btnCompartilharPdf" disabled>Compartilhar PDF</button>
+      <button type="button" class="btn" id="btnFecharPdf">Fechar</button>
+    </div>
+  </div>
+</dialog>
 
 </body></html>
 

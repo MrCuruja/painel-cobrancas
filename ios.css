@@ -1,7 +1,7 @@
 /* Monte Verde — camada de apresentação adaptativa.
    O limite de 600px acompanha os acordeões controlados pelo aplicativo. */
 :root {
-  color-scheme: light dark;
+  color-scheme: only light;
   --bg-main: #f2f3f5;
   --bg-card: #ffffff;
   --bg-field: #f3f4f6;
@@ -557,40 +557,44 @@ footer.note { max-width: 1050px; margin: 6px auto 0; padding: 0 12px; font-size:
   .modal { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
 }
 
-/* Cores do sistema, incluindo os estados antes fixados em cores claras. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-main: #111815;
-    --bg-card: #1b2520;
-    --bg-field: #24312a;
-    --bg-hover: #283a30;
-    --text-main: #eff5f0;
-    --text-muted: #acb9b0;
-    --accent: #69d5b4;
-    --accent-hover: #94e4cb;
-    --accent-soft: #213c30;
-    --accent-ink: #10271f;
-    --danger: #ff989e;
-    --danger-bg: #3d262d;
-    --danger-border: #664048;
-    --success: #8bd9a7;
-    --success-bg: #243b2d;
-    --warning: #f2cb80;
-    --warning-bg: #3b3224;
-    --critical: #ffa9b7;
-    --critical-bg: #452630;
-    --purple: #d4b3f2;
-    --purple-bg: #352b43;
-    --border: #3b4a40;
-    --separator: #2e3b32;
-    --focus-ring: #8adfc4;
-    --glass: rgba(17, 24, 21, .92);
-    --shadow: 0 2px 12px rgba(0, 0, 0, .1);
-  }
-  .btn-perigo:hover, .btn-excluir-morador:hover, .col-remover .rm-btn:hover { color: #331019; }
-  #loginBox button:hover { color: var(--accent-ink); }
-  .filtros-badge { color: var(--accent-ink); }
-  .modal-overlay { background: rgba(0, 0, 0, .6); }
+/* A folha de PDF acompanha a paleta clara permanente do aplicativo. */
+#pdfDialog {
+  width: calc(100% - 40px);
+  max-width: 560px;
+  max-height: calc(100vh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  max-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  color: var(--text-main);
+  background: var(--bg-card);
+  font: inherit;
+  box-shadow: 0 24px 80px rgba(13, 30, 23, .22);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#pdfDialog::backdrop {
+  background: rgba(13, 30, 23, .38);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+}
+.pdf-dialog-inner { padding: 28px; }
+#pdfDialog h2, #pdfDialog h3 { margin: 0 0 12px; font-size: 23px; line-height: 1.25; letter-spacing: -.035em; }
+#pdfMessage { margin: 0; font-size: 15px; line-height: 1.6; color: var(--text-main); overflow-wrap: anywhere; }
+.pdf-meta { margin-top: 16px; padding: 13px 15px; border: 1px solid var(--separator); border-radius: 12px; background: var(--bg-field); color: var(--text-muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.pdf-meta:empty, #pdfError:empty { display: none; }
+#pdfError { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--danger-border); border-radius: 12px; background: var(--danger-bg); color: var(--danger); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+#pdfDialog input, #pdfDialog select, #pdfDialog textarea { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-field); color: var(--text-main); font-size: 16px; }
+.pdf-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--separator); }
+.pdf-dialog-actions .btn { display: inline-flex; align-items: center; justify-content: center; flex: 1 1 auto; min-width: 0; min-height: 48px; text-align: center; text-decoration: none; }
+#pdfDialog [hidden] { display: none !important; }
+@media (max-width: 600px) {
+  #pdfDialog { width: calc(100% - 32px); border-radius: 22px; }
+  .pdf-dialog-inner { padding: 24px 20px; }
+  #pdfDialog h2, #pdfDialog h3 { font-size: 22px; }
+  .pdf-dialog-actions { flex-direction: column; gap: 10px; margin-top: 20px; }
+  .pdf-dialog-actions .btn { width: 100%; font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -600,16 +604,13 @@ footer.note { max-width: 1050px; margin: 6px auto 0; padding: 0 12px; font-size:
   :root { --text-muted: #3e5146; --border: #708277; --separator: #84968b; }
   .book, .kpi, .cover, .ficha, .stub { border-color: var(--border); }
 }
-@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root { --text-muted: #d2ded5; --border: #81988a; --separator: #6c8275; }
-}
 
 /* Impressão expande os registros e elimina os controles de navegação. */
 @media print {
   @page { size: landscape; margin: 12mm; }
-  :root { color-scheme: light; --bg-main: #fff; --bg-card: #fff; --bg-field: #fff; --text-main: #000; --text-muted: #333; --border: #aaa; --separator: #ccc; --accent: #075b47; --danger: #8c1823; --success: #14552a; }
+  :root { color-scheme: only light; --bg-main: #fff; --bg-card: #fff; --bg-field: #fff; --text-main: #000; --text-muted: #333; --border: #aaa; --separator: #ccc; --accent: #075b47; --danger: #8c1823; --success: #14552a; }
   html, body { padding: 0 !important; margin: 0 !important; min-width: 0; min-height: 0; background: #fff !important; color: #000 !important; font-size: 9pt; }
-  #statusBar, #noticeRegion, #loadingState, #loginOverlay, .modal-overlay, .fab-cadastro,
+  #statusBar, #noticeRegion, #loadingState, #loginOverlay, #pdfDialog, #pdfDialog::backdrop, .modal-overlay, .fab-cadastro,
   .filtros, .filtros-rodape, .add-row, .view-individual-header, .zona-perigo,
   .rm-btn, .assumption button, .chevron, .ficha-chevron, .parcela-resumo, .assumptions-cabecalho { display: none !important; }
   .wrap, #viewGeral, #viewIndividual { max-width: 100%; gap: 12px !important; }
